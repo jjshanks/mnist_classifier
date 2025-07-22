@@ -41,10 +41,10 @@ A well-organized project structure makes your code easier to navigate, maintain,
    ```bash
    # Windows
    cd C:\Users\YourName\Projects
-   
+
    # Mac/Linux
    cd ~/Projects
-   
+
    # Create Projects directory if it doesn't exist
    mkdir -p Projects
    cd Projects
@@ -60,7 +60,7 @@ A well-organized project structure makes your code easier to navigate, maintain,
    ```bash
    # On Mac/Linux
    mkdir -p src data notebooks docs static templates
-   
+
    # On Windows (PowerShell)
    mkdir src, data, notebooks, docs, static, templates
    ```
@@ -69,7 +69,7 @@ A well-organized project structure makes your code easier to navigate, maintain,
    ```bash
    # List directories to confirm
    ls -la
-   
+
    # On Windows
    dir
    ```
@@ -152,7 +152,7 @@ Git is like a time machine for your code. It lets you:
    ```bash
    git init
    ```
-   
+
    Expected output:
    ```
    Initialized empty Git repository in /path/to/mnist_classifier/.git/
@@ -162,13 +162,13 @@ Git is like a time machine for your code. It lets you:
    ```bash
    # Create the file
    touch .gitignore
-   
+
    # On Windows
    echo. > .gitignore
    ```
 
 3. **Add comprehensive ignore rules**:
-   
+
    Copy this exact content to your `.gitignore`:
    ```gitignore
    # Python compiled files
@@ -176,46 +176,46 @@ Git is like a time machine for your code. It lets you:
    *.py[cod]
    *$py.class
    *.so
-   
+
    # Virtual environments
    .venv/
    venv/
    ENV/
    env/
    .env
-   
+
    # Package files
    *.egg-info/
    dist/
    build/
    *.egg
-   
+
    # IDE files
    .idea/
    .vscode/
    *.swp
    *.swo
    .DS_Store
-   
+
    # Jupyter
    .ipynb_checkpoints/
-   
+
    # Data files (usually too large for Git)
    data/mnist/
    *.h5
    *.keras
    *.pkl
    *.csv
-   
+
    # Logs
    *.log
    logs/
-   
+
    # Testing
    .pytest_cache/
    .coverage
    htmlcov/
-   
+
    # OS files
    Thumbs.db
    ```
@@ -226,10 +226,10 @@ Each pattern tells Git to ignore certain files:
 
 - **`__pycache__/`**: Python's compiled bytecode cache
   - Why ignore: Auto-generated, system-specific
-  
+
 - **`.venv/`**: Virtual environment directory
   - Why ignore: Can be recreated from requirements.txt
-  
+
 - **`*.h5`**: Keras/TensorFlow model files
   - Why ignore: Often large, better to version control the code that creates them
 
@@ -239,7 +239,7 @@ Each pattern tells Git to ignore certain files:
    ```bash
    git status
    ```
-   
+
    You should see your directories and .gitignore as untracked.
 
 2. **Stage the .gitignore file**:
@@ -295,7 +295,7 @@ Think of a virtual environment as a sandbox for your project. It keeps your proj
    ```bash
    # On Mac/Linux
    curl -LsSf https://astral.sh/uv/install.sh | sh
-   
+
    # On Windows (PowerShell as Administrator)
    powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
    ```
@@ -309,26 +309,26 @@ Think of a virtual environment as a sandbox for your project. It keeps your proj
    ```bash
    uv venv
    ```
-   
+
    This creates a `.venv` directory in your project.
 
 4. **Activate the environment**:
-   
+
    **Mac/Linux**:
    ```bash
    source .venv/bin/activate
    ```
-   
+
    **Windows (Command Prompt)**:
    ```cmd
    .venv\Scripts\activate.bat
    ```
-   
+
    **Windows (PowerShell)**:
    ```powershell
    .venv\Scripts\Activate.ps1
    ```
-   
+
    If you get an execution policy error on Windows:
    ```powershell
    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
@@ -336,13 +336,13 @@ Think of a virtual environment as a sandbox for your project. It keeps your proj
 
 5. **Verify activation**:
    Your prompt should change to show `(.venv)` at the beginning.
-   
+
    Also check:
    ```bash
    which python  # Mac/Linux
    where python  # Windows
    ```
-   
+
    It should point to `.venv/bin/python` or `.venv\Scripts\python.exe`
 
 ### Understanding Virtual Environments
@@ -381,25 +381,25 @@ Before installing, let's understand what each package does:
 
 1. **fastapi**: Modern web framework for building APIs
    - Why: Easy to use, automatic documentation, great performance
-   
+
 2. **uvicorn[standard]**: ASGI server for FastAPI
    - Why: Runs our web application, includes performance extras
-   
+
 3. **numpy**: Fundamental package for numerical computing
    - Why: Efficient array operations, basis for most ML libraries
-   
+
 4. **tensorflow**: Deep learning framework
    - Why: Industry standard, includes Keras API, great for beginners
-   
+
 5. **pillow**: Python Imaging Library (PIL)
    - Why: Load and manipulate images for our digit classifier
-   
+
 6. **jupyter**: Interactive notebook environment
    - Why: Great for experimentation and visualization
-   
+
 7. **matplotlib**: Plotting library
    - Why: Visualize data and model performance
-   
+
 8. **seaborn**: Statistical visualization built on matplotlib
    - Why: Beautiful default styles, easier high-level plotting
 
@@ -415,21 +415,21 @@ Before installing, let's understand what each package does:
    ```bash
    uv pip install fastapi uvicorn[standard] numpy tensorflow pillow jupyter matplotlib seaborn
    ```
-   
+
    This may take a few minutes as TensorFlow is large.
 
 3. **Generate requirements.txt**:
    ```bash
    uv pip freeze > requirements.txt
    ```
-   
+
    This creates a file listing all installed packages with exact versions.
 
 4. **Verify installations**:
    ```python
    # Run python to test imports
    python
-   
+
    >>> import fastapi
    >>> import numpy as np
    >>> import tensorflow as tf
@@ -487,69 +487,69 @@ Good documentation is like leaving breadcrumbs for your future self (and others)
    ```
 
 2. **Add comprehensive content**:
-   
+
    Copy this template to your README.md:
-   
+
    ```markdown
    # MNIST Digit Classifier
-   
+
    A comprehensive machine learning application that classifies handwritten digits using deep learning, featuring both CLI and web interfaces.
-   
+
    ## 🎯 Project Overview
-   
+
    This project implements a complete ML pipeline for digit recognition:
    - Convolutional Neural Network (CNN) trained on MNIST dataset
    - Command-line interface for single image predictions
    - Interactive web application with real-time drawing
    - Visualization of neural network activations
-   
+
    ## 🛠️ Technologies Used
-   
+
    - **Python 3.13**: Core programming language
    - **TensorFlow/Keras**: Deep learning framework
    - **FastAPI**: Modern web framework
    - **uv**: Fast Python package manager
    - **NumPy**: Numerical computations
    - **Pillow**: Image processing
-   
+
    ## 📋 Prerequisites
-   
+
    - Python 3.13 or higher
    - Git
    - 4GB RAM minimum
    - 500MB free disk space
-   
+
    ## 🚀 Quick Start
-   
+
    1. **Clone the repository**:
       \```bash
       git clone <repository-url>
       cd mnist_classifier
       \```
-   
+
    2. **Set up environment**:
       \```bash
       uv venv
       source .venv/bin/activate  # On Windows: .venv\Scripts\activate
       \```
-   
+
    3. **Install dependencies**:
       \```bash
       uv pip install -r requirements.txt
       \```
-   
+
    4. **Train the model** (after implementing):
       \```bash
       python src/train.py
       \```
-   
+
    5. **Run the web app** (after implementing):
       \```bash
       uvicorn src.main:app --reload
       \```
-   
+
    ## 📁 Project Structure
-   
+
    \```
    mnist_classifier/
    ├── src/              # Source code
@@ -561,28 +561,28 @@ Good documentation is like leaving breadcrumbs for your future self (and others)
    ├── requirements.txt  # Project dependencies
    └── README.md         # This file
    \```
-   
+
    ## 🎓 Learning Resources
-   
+
    - [TensorFlow Tutorials](https://www.tensorflow.org/tutorials)
    - [FastAPI Documentation](https://fastapi.tiangolo.com)
    - [MNIST Database](http://yann.lecun.com/exdb/mnist/)
-   
+
    ## 📝 Development Roadmap
-   
+
    - [x] Milestone 1: Project setup
    - [ ] Milestone 2: Data pipeline
    - [ ] Milestone 3: Model training
    - [ ] Milestone 4: CLI interface
    - [ ] Milestone 5: Web interface
    - [ ] Milestone 6: Visualizations
-   
+
    ## 🤝 Contributing
-   
+
    This is a learning project. Feel free to fork and experiment!
-   
+
    ## 📄 License
-   
+
    This project is for educational purposes.
    ```
 
@@ -646,7 +646,7 @@ import platform
 def create_directories():
     """Create project directory structure."""
     dirs = ['src', 'data', 'notebooks', 'docs', 'static', 'templates']
-    
+
     print("📁 Creating directory structure...")
     for dir_name in dirs:
         if not os.path.exists(dir_name):
@@ -690,7 +690,7 @@ data/mnist/
 *.log
 logs/
 """
-    
+
     print("\n📝 Creating .gitignore...")
     with open('.gitignore', 'w') as f:
         f.write(gitignore_content)
@@ -699,18 +699,18 @@ logs/
 def init_git():
     """Initialize git repository."""
     print("\n🔧 Initializing Git repository...")
-    
+
     if os.path.exists('.git'):
         print("  ℹ️  Git repository already initialized")
         return
-    
+
     try:
         subprocess.run(['git', 'init'], check=True, capture_output=True)
         print("  ✅ Git repository initialized")
-        
+
         # Make initial commit
         subprocess.run(['git', 'add', '.gitignore'], check=True)
-        subprocess.run(['git', 'commit', '-m', 'Initial commit: Add .gitignore'], 
+        subprocess.run(['git', 'commit', '-m', 'Initial commit: Add .gitignore'],
                       check=True, capture_output=True)
         print("  ✅ Initial commit created")
     except subprocess.CalledProcessError as e:
@@ -720,7 +720,7 @@ def init_git():
 def setup_virtual_env():
     """Create virtual environment using uv."""
     print("\n🐍 Setting up virtual environment...")
-    
+
     # Check if uv is installed
     try:
         subprocess.run(['uv', '--version'], check=True, capture_output=True)
@@ -728,20 +728,20 @@ def setup_virtual_env():
         print("  ❌ uv is not installed")
         print("  Please install from: https://github.com/astral-sh/uv")
         return False
-    
+
     # Create virtual environment
     if not os.path.exists('.venv'):
         subprocess.run(['uv', 'venv'], check=True)
         print("  ✅ Virtual environment created")
     else:
         print("  ℹ️  Virtual environment already exists")
-    
+
     return True
 
 def get_activation_command():
     """Get the correct activation command for the current platform."""
     system = platform.system()
-    
+
     if system == "Windows":
         return ".venv\\Scripts\\activate"
     else:
@@ -751,12 +751,12 @@ def main():
     """Run all setup steps."""
     print("🚀 MNIST Classifier Project Setup")
     print("=" * 40)
-    
+
     # Run setup steps
     create_directories()
     create_gitignore()
     init_git()
-    
+
     if setup_virtual_env():
         print("\n✨ Setup complete!")
         print("\n📋 Next steps:")
@@ -796,61 +796,61 @@ def check_mark(condition):
 def check_directories():
     """Check if all required directories exist."""
     print("\n📁 Checking directory structure:")
-    
+
     required_dirs = ['src', 'data', 'notebooks', 'docs', 'static', 'templates']
     all_exist = True
-    
+
     for dir_name in required_dirs:
         exists = os.path.isdir(dir_name)
         print(f"  {check_mark(exists)} {dir_name}/")
         if not exists:
             all_exist = False
-    
+
     return all_exist
 
 def check_git():
     """Check if git is initialized properly."""
     print("\n🔧 Checking Git setup:")
-    
+
     git_exists = os.path.exists('.git')
     print(f"  {check_mark(git_exists)} Git repository initialized")
-    
+
     gitignore_exists = os.path.exists('.gitignore')
     print(f"  {check_mark(gitignore_exists)} .gitignore file exists")
-    
+
     # Check if there's at least one commit
     has_commits = False
     if git_exists:
         try:
-            result = subprocess.run(['git', 'log', '--oneline', '-1'], 
+            result = subprocess.run(['git', 'log', '--oneline', '-1'],
                                   capture_output=True, text=True)
             has_commits = result.returncode == 0
         except:
             pass
-    
+
     print(f"  {check_mark(has_commits)} Has at least one commit")
-    
+
     return git_exists and gitignore_exists and has_commits
 
 def check_virtual_env():
     """Check if virtual environment exists and is activated."""
     print("\n🐍 Checking virtual environment:")
-    
+
     venv_exists = os.path.exists('.venv')
     print(f"  {check_mark(venv_exists)} Virtual environment exists")
-    
+
     # Check if activated by looking at sys.prefix
     is_activated = hasattr(sys, 'real_prefix') or (
         hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix
     )
     print(f"  {check_mark(is_activated)} Virtual environment is activated")
-    
+
     return venv_exists and is_activated
 
 def check_dependencies():
     """Check if all required packages are installed."""
     print("\n📦 Checking dependencies:")
-    
+
     packages = {
         'fastapi': 'fastapi',
         'uvicorn': 'uvicorn',
@@ -861,7 +861,7 @@ def check_dependencies():
         'matplotlib': 'matplotlib',
         'seaborn': 'seaborn'
     }
-    
+
     all_installed = True
     for import_name, display_name in packages.items():
         spec = importlib.util.find_spec(import_name)
@@ -869,35 +869,35 @@ def check_dependencies():
         print(f"  {check_mark(is_installed)} {display_name}")
         if not is_installed:
             all_installed = False
-    
+
     requirements_exists = os.path.exists('requirements.txt')
     print(f"  {check_mark(requirements_exists)} requirements.txt exists")
-    
+
     return all_installed and requirements_exists
 
 def check_documentation():
     """Check if README.md exists."""
     print("\n📝 Checking documentation:")
-    
+
     readme_exists = os.path.exists('README.md')
     print(f"  {check_mark(readme_exists)} README.md exists")
-    
+
     # Check if README has content
     has_content = False
     if readme_exists:
         with open('README.md', 'r') as f:
             content = f.read().strip()
             has_content = len(content) > 100  # At least 100 characters
-    
+
     print(f"  {check_mark(has_content)} README.md has substantial content")
-    
+
     return readme_exists and has_content
 
 def main():
     """Run all verification checks."""
     print("🔍 MNIST Classifier - Milestone 1 Verification")
     print("=" * 50)
-    
+
     # Run all checks
     checks = [
         ("Directory Structure", check_directories()),
@@ -906,7 +906,7 @@ def main():
         ("Dependencies", check_dependencies()),
         ("Documentation", check_documentation())
     ]
-    
+
     # Summary
     print("\n📊 Summary:")
     all_passed = True
@@ -914,7 +914,7 @@ def main():
         print(f"  {check_mark(passed)} {name}")
         if not passed:
             all_passed = False
-    
+
     if all_passed:
         print("\n🎉 Congratulations! Milestone 1 is complete!")
         print("You're ready to move on to Milestone 2: Data Acquisition")
