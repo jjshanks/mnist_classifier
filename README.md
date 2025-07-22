@@ -42,7 +42,7 @@ This project implements a complete ML pipeline for digit recognition:
 
 3. **Install dependencies**:
    ```bash
-   uv sync
+   uv sync --all-extras
    ```
 
 4. **Train the model** (after implementing):
@@ -59,14 +59,20 @@ This project implements a complete ML pipeline for digit recognition:
 
 ```
 mnist_classifier/
-├── src/              # Source code
-├── data/             # Dataset storage
-├── notebooks/        # Jupyter notebooks
-├── docs/             # Documentation
-├── static/           # Frontend assets
-├── templates/        # HTML templates
-├── pyproject.toml    # Project configuration and dependencies
-└── README.md         # This file
+├── src/
+│   └── mnist_classifier/    # Main package
+│       ├── __init__.py     # Package initialization
+│       └── py.typed        # Type checking marker
+├── tests/                  # Test suite
+├── data/                   # Dataset storage (gitignored)
+├── notebooks/              # Jupyter notebooks
+├── docs/                   # Documentation
+├── static/                 # Frontend assets
+├── templates/              # HTML templates
+├── pyproject.toml          # Project configuration and dependencies
+├── uv.lock                 # Locked dependencies
+├── CLAUDE.md               # AI assistant instructions
+└── README.md               # This file
 ```
 
 ## 🎓 Learning Resources
