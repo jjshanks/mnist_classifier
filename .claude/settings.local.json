@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(uv sync:*)"
+      "Bash(uv sync:*)",
+      "Bash(find:*)",
+      "Bash(ruff check:*)",
+      "Bash(ruff format:*)",
+      "Bash(mypy:*)"
     ],
     "deny": []
   }
