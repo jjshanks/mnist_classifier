@@ -42,7 +42,7 @@ This project implements a complete ML pipeline for digit recognition:
 
 3. **Install dependencies**:
    ```bash
-   uv pip install -r requirements.txt
+   uv sync
    ```
 
 4. **Train the model** (after implementing):
@@ -65,7 +65,7 @@ mnist_classifier/
 ├── docs/             # Documentation
 ├── static/           # Frontend assets
 ├── templates/        # HTML templates
-├── requirements.txt  # Project dependencies
+├── pyproject.toml    # Project configuration and dependencies
 └── README.md         # This file
 ```
 
