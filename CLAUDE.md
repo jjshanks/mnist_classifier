@@ -20,6 +20,9 @@ uv sync --all-extras
 
 ### Code Quality
 ```bash
+# Run all pre-commit hooks
+pre-commit run --all-files
+
 # Format code
 ruff format
 
@@ -72,7 +75,9 @@ uvicorn src.main:app --reload
 - **Config**: All tool configurations centralized in `pyproject.toml`
 - **Type Safety**: Strict mypy configuration with `py.typed` marker
 - **Testing**: pytest with coverage reporting configured
-- **Code Quality**: ruff for linting/formatting, pre-commit hooks ready
+- **Code Quality**: ruff for linting/formatting, pre-commit hooks configured
+- **Path Handling**: Uses `pathlib.Path` instead of `os.path` throughout the codebase
+- **Pre-commit Hooks**: Automated checks for code quality, type safety, and security
 
 ### Implementation Roadmap
 The project follows a structured 6-milestone plan:
@@ -91,3 +96,6 @@ Detailed milestone documentation is in `docs/ROADMAP.md` and individual mileston
 - Follow existing code structure patterns when adding new modules
 - The `data/` directory is gitignored for dataset storage
 - Run tests before committing changes
+- Pre-commit hooks automatically check code quality - run `pre-commit run --all-files` before committing
+- Use `pathlib.Path` for all file operations, not `os.path`
+- Break complex assertions into multiple simple assertions for better error messages
