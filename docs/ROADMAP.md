@@ -11,8 +11,8 @@
 - Dataset: MNIST
 
 ## Implementation Progress
-- [ ] Milestone 1: Project Foundation and Setup
-- [ ] Milestone 2: Data Acquisition and Preparation
+- [x] Milestone 1: Project Foundation and Setup ✅
+- [x] Milestone 2: Data Acquisition and Preparation ✅
 - [ ] Milestone 3: Neural Network for Digit Classification
 - [ ] Milestone 4: Command-Line Interface (CLI)
 - [ ] Milestone 5: Interactive Web Interface

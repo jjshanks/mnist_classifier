@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an MNIST digit classifier project using TensorFlow and FastAPI. The project is currently at Milestone 1 (Project Foundation and Setup) of a 6-milestone roadmap. It's configured with modern Python 3.13 tooling and follows best practices for ML projects.
+This is an MNIST digit classifier project using TensorFlow and FastAPI. The project is currently at Milestone 2 (Data Acquisition and Preparation) completed of a 6-milestone roadmap. It's configured with modern Python 3.13 tooling and follows best practices for ML projects.
 
 ## Essential Commands
 
@@ -41,22 +41,31 @@ pytest
 
 ### Running the Application
 ```bash
+# Test data pipeline (Milestone 2)
+python quick_setup_data.py
+
+# Run data pipeline verification
+python verify_milestone2.py
+
 # Train model (once implemented)
 python src/train.py
 
-# Start web server
+# Start web server (once implemented)
 uvicorn src.main:app --reload
 ```
 
 ## Architecture and Structure
 
-### Core Components (To Be Implemented)
-1. **Data Pipeline** (`src/mnist_classifier/data/`): MNIST dataset downloading, preprocessing, and augmentation
-2. **Model** (`src/mnist_classifier/models/`): TensorFlow neural network implementation
-3. **Training** (`src/mnist_classifier/training/`): Model training, validation, and checkpoint management
-4. **CLI** (`src/mnist_classifier/cli/`): Command-line interface for training and prediction
-5. **Web API** (`src/mnist_classifier/api/`): FastAPI endpoints for predictions
-6. **Frontend** (`templates/` and `static/`): Interactive web interface
+### Core Components
+1. **Data Pipeline** (✅ Implemented in Milestone 2):
+   - `load_data.py`: MNIST dataset downloading and loading
+   - `preprocess.py`: Data normalization, reshaping, and encoding
+   - `data_pipeline.py`: Integrated pipeline with caching
+2. **Model** (`src/mnist_classifier/models/`): TensorFlow neural network implementation (To be implemented)
+3. **Training** (`src/mnist_classifier/training/`): Model training, validation, and checkpoint management (To be implemented)
+4. **CLI** (`src/mnist_classifier/cli/`): Command-line interface for training and prediction (To be implemented)
+5. **Web API** (`src/mnist_classifier/api/`): FastAPI endpoints for predictions (To be implemented)
+6. **Frontend** (`templates/` and `static/`): Interactive web interface (To be implemented)
 
 ### Key Technical Decisions
 - **Package Manager**: Uses `uv` for fast, reliable dependency management
@@ -67,9 +76,9 @@ uvicorn src.main:app --reload
 
 ### Implementation Roadmap
 The project follows a structured 6-milestone plan:
-1. ✓ Project Foundation and Setup (Current)
-2. Data Acquisition and Preparation
-3. Neural Network for Digit Classification
+1. ✓ Project Foundation and Setup (Complete)
+2. ✓ Data Acquisition and Preparation (Complete)
+3. Neural Network for Digit Classification (Next)
 4. Command-Line Interface (CLI)
 5. Interactive Web Interface
 6. Visualizing the Neural Network State

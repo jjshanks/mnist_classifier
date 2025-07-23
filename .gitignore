@@ -23,10 +23,27 @@ env/
 
 # Data and models
 data/mnist/
+data/samples/
+data/processed/
+data/*.png
+data/*.txt
 *.h5
 *.keras
 *.pkl
+*.ckpt
 
 # Logs
 *.log
 logs/
+tensorboard_logs/
+
+# Testing and temporary files
+.pytest_cache/
+.coverage
+htmlcov/
+*.tmp
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/

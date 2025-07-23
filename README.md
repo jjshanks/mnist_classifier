@@ -45,12 +45,17 @@ This project implements a complete ML pipeline for digit recognition:
    uv sync --all-extras
    ```
 
-4. **Train the model** (after implementing):
+4. **Test data pipeline** (Milestone 2 complete!):
+   ```bash
+   python quick_setup_data.py
+   ```
+
+5. **Train the model** (after implementing):
    ```bash
    python src/train.py
    ```
 
-5. **Run the web app** (after implementing):
+6. **Run the web app** (after implementing):
    ```bash
    uvicorn src.main:app --reload
    ```
@@ -60,19 +65,30 @@ This project implements a complete ML pipeline for digit recognition:
 ```
 mnist_classifier/
 ├── src/
-│   └── mnist_classifier/    # Main package
-│       ├── __init__.py     # Package initialization
-│       └── py.typed        # Type checking marker
-├── tests/                  # Test suite
-├── data/                   # Dataset storage (gitignored)
-├── notebooks/              # Jupyter notebooks
-├── docs/                   # Documentation
-├── static/                 # Frontend assets
-├── templates/              # HTML templates
-├── pyproject.toml          # Project configuration and dependencies
-├── uv.lock                 # Locked dependencies
-├── CLAUDE.md               # AI assistant instructions
-└── README.md               # This file
+│   └── mnist_classifier/      # Main package
+│       ├── __init__.py       # Package initialization
+│       ├── load_data.py      # MNIST data loading module
+│       ├── preprocess.py     # Data preprocessing functions
+│       ├── data_pipeline.py  # Integrated data pipeline
+│       ├── example_usage.py  # Pipeline usage examples
+│       └── py.typed          # Type checking marker
+├── tests/                    # Test suite
+├── data/                     # Dataset storage (gitignored)
+│   ├── processed/            # Cached preprocessed data
+│   └── samples/              # Sample images
+├── notebooks/                # Jupyter notebooks
+│   └── 01_data_exploration.ipynb  # Data analysis notebook
+├── docs/                     # Documentation
+│   ├── ROADMAP.md           # Project roadmap
+│   └── MILESTONE_*.md       # Detailed milestone guides
+├── static/                   # Frontend assets (future)
+├── templates/                # HTML templates (future)
+├── pyproject.toml            # Project configuration
+├── uv.lock                   # Locked dependencies
+├── CLAUDE.md                 # AI assistant instructions
+├── quick_setup_data.py       # Quick data setup script
+├── verify_milestone2.py      # Milestone verification
+└── README.md                 # This file
 ```
 
 ## 🎓 Learning Resources
@@ -84,11 +100,20 @@ mnist_classifier/
 ## 📝 Development Roadmap
 
 - [x] Milestone 1: Project setup
-- [ ] Milestone 2: Data pipeline
+- [x] Milestone 2: Data pipeline (Complete! ✨)
 - [ ] Milestone 3: Model training
 - [ ] Milestone 4: CLI interface
 - [ ] Milestone 5: Web interface
 - [ ] Milestone 6: Visualizations
+
+### Current Features (Milestone 2)
+
+- **Data Loading**: Automatic MNIST dataset download and caching
+- **Preprocessing**: Normalization, reshaping, one-hot encoding
+- **Data Pipeline**: Integrated pipeline with caching for efficiency
+- **Data Exploration**: Jupyter notebook with visualizations
+- **Validation Split**: Automatic train/validation splitting
+- **Batch Generator**: Memory-efficient data loading for training
 
 ## 🤝 Contributing
 
