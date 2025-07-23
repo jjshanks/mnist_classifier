@@ -4,10 +4,10 @@ Quick setup script for Milestone 2 data pipeline.
 Run this to quickly test that everything is working.
 """
 
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, str(Path.cwd()))
 
 import matplotlib.pyplot as plt
 import numpy as np

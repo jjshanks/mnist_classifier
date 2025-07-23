@@ -6,8 +6,8 @@ Checks all requirements and provides detailed feedback.
 
 import importlib.util
 import json
-import os
 import sys
+from pathlib import Path
 
 
 def check_mark(condition):
@@ -29,7 +29,7 @@ def check_files_exist():
 
     all_exist = True
     for filepath, description in required_files:
-        exists = os.path.exists(filepath)
+        exists = Path(filepath).exists()
         print(f"  {check_mark(exists)} {description}: {filepath}")
         if not exists:
             all_exist = False
@@ -109,7 +109,8 @@ def check_preprocessing():
         normalized = normalize_pixels(test_images)
         norm_ok = normalized.min() >= 0 and normalized.max() <= 1
         print(
-            f"  {check_mark(norm_ok)} Normalization: [{normalized.min():.3f}, {normalized.max():.3f}]"
+            f"  {check_mark(norm_ok)} Normalization: "
+            f"[{normalized.min():.3f}, {normalized.max():.3f}]"
         )
 
         # Test reshaping
@@ -172,12 +173,12 @@ def check_notebook():
 
     notebook_path = "notebooks/01_data_exploration.ipynb"
 
-    if not os.path.exists(notebook_path):
+    if not Path(notebook_path).exists():
         print(f"  {check_mark(False)} Notebook not found")
         return False
 
     try:
-        with open(notebook_path) as f:
+        with Path(notebook_path).open() as f:
             notebook = json.load(f)
 
         n_cells = len(notebook.get("cells", []))
@@ -207,7 +208,7 @@ def check_generated_files():
 
     all_exist = True
     for filepath, description in expected_files:
-        exists = os.path.exists(filepath)
+        exists = Path(filepath).exists()
         print(f"  {check_mark(exists)} {description}")
         if not exists:
             all_exist = False
@@ -221,13 +222,13 @@ def main():
     print("=" * 50)
 
     # Make sure we're in the right directory
-    if not os.path.exists("src/mnist_classifier"):
+    if not Path("src/mnist_classifier").exists():
         print("❌ Error: Not in project root directory!")
         print("Please run this from the mnist_classifier project root.")
         sys.exit(1)
 
     # Add project root to path
-    sys.path.insert(0, os.path.abspath("."))
+    sys.path.insert(0, str(Path.cwd()))
 
     # Run all checks
     checks = [

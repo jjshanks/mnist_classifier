@@ -7,9 +7,10 @@ easy-to-use pipeline for training neural networks.
 
 import json
 import logging
-import os
 import pickle
-from typing import Any, Generator
+from collections.abc import Generator
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 import numpy.typing as npt
@@ -55,7 +56,7 @@ class MNISTDataPipeline:
         self.preprocessing_params: dict[str, Any] | None = None
 
         # Create directories if needed
-        os.makedirs(self.cache_dir, exist_ok=True)
+        Path(self.cache_dir).mkdir(parents=True, exist_ok=True)
 
     def prepare_data(
         self,
@@ -76,11 +77,11 @@ class MNISTDataPipeline:
         Returns:
             Dictionary with all preprocessed data and parameters
         """
-        cache_file = os.path.join(self.cache_dir, "preprocessed_data.pkl")
-        params_file = os.path.join(self.cache_dir, "preprocessing_params.json")
+        cache_file = Path(self.cache_dir) / "preprocessed_data.pkl"
+        params_file = Path(self.cache_dir) / "preprocessing_params.json"
 
         # Try to load from cache
-        if use_cache and not force_reload and os.path.exists(cache_file):
+        if use_cache and not force_reload and cache_file.exists():
             logger.info("Loading preprocessed data from cache...")
             return self._load_from_cache(cache_file, params_file)
 
@@ -115,26 +116,28 @@ class MNISTDataPipeline:
 
         return preprocessed_data
 
-    def _save_to_cache(self, data: dict[str, Any], cache_file: str, params_file: str) -> None:
+    def _save_to_cache(
+        self, data: dict[str, Any], cache_file: Path, params_file: Path
+    ) -> None:
         """Save preprocessed data to cache."""
         logger.info(f"Saving preprocessed data to {cache_file}...")
 
         # Save data as pickle
-        with open(cache_file, "wb") as f:
+        with cache_file.open("wb") as f:
             pickle.dump(data, f)
 
         # Save parameters as JSON for readability
-        with open(params_file, "w") as f:
+        with params_file.open("w") as f:
             json.dump(data["preprocessing_params"], f, indent=2)
 
         logger.info("Cache saved successfully!")
 
-    def _load_from_cache(self, cache_file: str, params_file: str) -> dict[str, Any]:
+    def _load_from_cache(self, cache_file: Path, params_file: Path) -> dict[str, Any]:
         """Load preprocessed data from cache."""
-        with open(cache_file, "rb") as f:
+        with cache_file.open("rb") as f:
             data = pickle.load(f)
 
-        with open(params_file) as f:
+        with params_file.open() as f:
             params = json.load(f)
 
         # Verify parameters match
@@ -180,7 +183,9 @@ class MNISTDataPipeline:
 
                 yield x_data[batch_indices], y_data[batch_indices]
 
-    def prepare_single_image(self, image: npt.NDArray[np.uint8]) -> npt.NDArray[np.float32]:
+    def prepare_single_image(
+        self, image: npt.NDArray[np.uint8]
+    ) -> npt.NDArray[np.float32]:
         """
         Preprocess a single image for inference.
 
@@ -198,17 +203,15 @@ class MNISTDataPipeline:
             image.reshape(1, 28, 28),
             method=self.preprocessing_params["normalize_method"],
         )
-        reshaped = reshape_images(normalized, add_channel=True)
-        return reshaped
+        return reshape_images(normalized, add_channel=True)
 
     def get_sample_batch(
-        self, dataset: str = "train", n_samples: int = 32
+        self, n_samples: int = 32
     ) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32]]:
         """
         Get a sample batch for testing or visualization.
 
         Args:
-            dataset: Which dataset to sample from ('train', 'val', 'test')
             n_samples: Number of samples
 
         Returns:
@@ -219,10 +222,13 @@ class MNISTDataPipeline:
 
         # This would need access to the loaded data
         # Implementation depends on how you store the data
+        _ = n_samples  # Acknowledge unused parameter for future implementation
         raise NotImplementedError("get_sample_batch not yet implemented")
 
 
-def create_data_summary_report(data: dict[str, Any], output_file: str = "data/data_summary.txt") -> None:
+def create_data_summary_report(
+    data: dict[str, Any], output_file: str = "data/data_summary.txt"
+) -> None:
     """
     Create a comprehensive summary report of the processed data.
 
@@ -230,9 +236,10 @@ def create_data_summary_report(data: dict[str, Any], output_file: str = "data/da
         data: Preprocessed data dictionary
         output_file: Where to save the report
     """
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+    output_path = Path(output_file)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(output_file, "w") as f:
+    with output_path.open("w") as f:
         f.write("MNIST Data Pipeline Summary Report\n")
         f.write("=" * 50 + "\n\n")
 
@@ -292,7 +299,7 @@ def verify_data_pipeline() -> dict[str, Any]:
     import time
 
     start_time = time.time()
-    data_cached = pipeline.prepare_data(validation_split=0.15)
+    pipeline.prepare_data(validation_split=0.15)
     cache_time = time.time() - start_time
     print(f"   ✓ Cache loading took {cache_time:.2f} seconds")
 

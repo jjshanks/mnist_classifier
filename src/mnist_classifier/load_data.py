@@ -6,7 +6,7 @@ The data is automatically cached after first download.
 """
 
 import logging
-import os
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -28,16 +28,19 @@ def create_data_directory(data_dir: str = "data/") -> str:
     Returns:
         Absolute path to data directory
     """
-    abs_data_dir = os.path.abspath(data_dir)
-    if not os.path.exists(abs_data_dir):
-        os.makedirs(abs_data_dir)
-        logger.info(f"Created data directory: {abs_data_dir}")
-    return abs_data_dir
+    data_path = Path(data_dir).resolve()
+    if not data_path.exists():
+        data_path.mkdir(parents=True)
+        logger.info(f"Created data directory: {data_path}")
+    return str(data_path)
 
 
 def load_mnist(
     data_dir: str = "data/",
-) -> tuple[tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]], tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]]]:
+) -> tuple[
+    tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]],
+    tuple[npt.NDArray[np.uint8], npt.NDArray[np.uint8]],
+]:
     """
     Load MNIST dataset and return train/test splits.
 
@@ -62,7 +65,7 @@ def load_mnist(
         >>> print(f"Training labels shape: {y_train.shape}")
     """
     # Create data directory
-    abs_data_dir = create_data_directory(data_dir)
+    create_data_directory(data_dir)
 
     logger.info("Loading MNIST dataset...")
 
@@ -95,8 +98,10 @@ def load_mnist(
         assert y_test.shape == (10000,), f"Unexpected test labels shape: {y_test.shape}"
 
         # Verify label ranges
-        assert y_train.min() >= 0 and y_train.max() <= 9, "Training labels out of range"
-        assert y_test.min() >= 0 and y_test.max() <= 9, "Test labels out of range"
+        assert y_train.min() >= 0, "Training labels min out of range"
+        assert y_train.max() <= 9, "Training labels max out of range"
+        assert y_test.min() >= 0, "Test labels min out of range"
+        assert y_test.max() <= 9, "Test labels max out of range"
 
         return (x_train, y_train), (x_test, y_test)
 
@@ -106,7 +111,10 @@ def load_mnist(
 
 
 def get_dataset_info(
-    x_train: npt.NDArray[np.uint8], y_train: npt.NDArray[np.uint8], x_test: npt.NDArray[np.uint8], y_test: npt.NDArray[np.uint8]
+    x_train: npt.NDArray[np.uint8],
+    y_train: npt.NDArray[np.uint8],
+    x_test: npt.NDArray[np.uint8],
+    y_test: npt.NDArray[np.uint8],
 ) -> dict[str, Any]:
     """
     Get comprehensive information about the dataset.
@@ -124,7 +132,7 @@ def get_dataset_info(
     train_class_counts = np.bincount(y_train)
     test_class_counts = np.bincount(y_test)
 
-    info = {
+    return {
         "num_classes": 10,
         "image_shape": x_train.shape[1:],
         "train_samples": x_train.shape[0],
@@ -145,8 +153,6 @@ def get_dataset_info(
         },
     }
 
-    return info
-
 
 def save_sample_images(
     x_data: npt.NDArray[np.uint8],
@@ -166,7 +172,7 @@ def save_sample_images(
     from PIL import Image
 
     # Create output directory
-    os.makedirs(output_dir, exist_ok=True)
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     # Save random samples
     indices = np.random.choice(len(x_data), num_samples, replace=False)
@@ -175,8 +181,8 @@ def save_sample_images(
         img = Image.fromarray(x_data[idx])
         label = y_data[idx]
         filename = f"sample_{i:02d}_label_{label}.png"
-        filepath = os.path.join(output_dir, filename)
-        img.save(filepath)
+        filepath = Path(output_dir) / filename
+        img.save(str(filepath))
         logger.info(f"Saved sample image: {filename}")
 
 

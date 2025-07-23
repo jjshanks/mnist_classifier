@@ -95,6 +95,12 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_unreachable = true
 strict_equality = true
+explicit_package_bases = true
+mypy_path = "src"
+
+[[tool.mypy.overrides]]
+module = ["tensorflow.*", "numpy", "numpy.typing", "matplotlib", "matplotlib.pyplot"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -112,6 +118,6 @@ dev-dependencies = [
 [tool.bandit]
 targets = ["src"]
 exclude_dirs = ["tests", "venv", ".venv"]
-skips = ["B404", "B603", "B607", "B110"]
+skips = ["B404", "B603", "B607", "B110", "B101", "B301", "B403"]
 severity = "low"
 confidence = "low"

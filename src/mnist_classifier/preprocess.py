@@ -14,7 +14,9 @@ import numpy.typing as npt
 logger = logging.getLogger(__name__)
 
 
-def normalize_pixels(images: npt.NDArray[np.uint8], method: str = "standard") -> npt.NDArray[np.float32]:
+def normalize_pixels(
+    images: npt.NDArray[np.uint8], method: str = "standard"
+) -> npt.NDArray[np.float32]:
     """
     Normalize pixel values to prepare for neural network input.
 
@@ -51,13 +53,18 @@ def normalize_pixels(images: npt.NDArray[np.uint8], method: str = "standard") ->
     # Verify output range
     if method == "standard":
         assert (
-            normalized.min() >= 0 and normalized.max() <= 1
-        ), f"Normalization failed: range [{normalized.min()}, {normalized.max()}]"
+            normalized.min() >= 0
+        ), f"Normalization failed: min value {normalized.min()} < 0"
+        assert (
+            normalized.max() <= 1
+        ), f"Normalization failed: max value {normalized.max()} > 1"
 
     return normalized
 
 
-def denormalize_pixels(images: npt.NDArray[np.float32], method: str = "standard") -> npt.NDArray[np.uint8]:
+def denormalize_pixels(
+    images: npt.NDArray[np.float32], method: str = "standard"
+) -> npt.NDArray[np.uint8]:
     """
     Reverse normalization for visualization.
 
@@ -80,7 +87,9 @@ def denormalize_pixels(images: npt.NDArray[np.float32], method: str = "standard"
     return denormalized.astype(np.uint8)
 
 
-def reshape_images(images: npt.NDArray[np.float32], add_channel: bool = True) -> npt.NDArray[np.float32]:
+def reshape_images(
+    images: npt.NDArray[np.float32], add_channel: bool = True
+) -> npt.NDArray[np.float32]:
     """
     Reshape images for CNN input.
 
@@ -117,7 +126,9 @@ def reshape_images(images: npt.NDArray[np.float32], add_channel: bool = True) ->
     return reshaped
 
 
-def one_hot_encode_labels(labels: npt.NDArray[np.int32], num_classes: int = 10) -> npt.NDArray[np.float32]:
+def one_hot_encode_labels(
+    labels: npt.NDArray[np.int32], num_classes: int = 10
+) -> npt.NDArray[np.float32]:
     """
     Convert integer labels to one-hot encoded vectors.
 
@@ -172,7 +183,7 @@ def decode_one_hot_labels(one_hot: npt.NDArray[np.float32]) -> npt.NDArray[np.in
     Returns:
         Integer labels of shape (n_samples,)
     """
-    return np.argmax(one_hot, axis=1).astype(np.int64)  # type: ignore[no-any-return]
+    return np.argmax(one_hot, axis=1).astype(np.int64)
 
 
 def create_train_validation_split(
@@ -180,7 +191,12 @@ def create_train_validation_split(
     y_data: npt.NDArray[np.int32],
     validation_split: float = 0.1,
     random_seed: int | None = 42,
-) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.int32], npt.NDArray[np.float32], npt.NDArray[np.int32]]:
+) -> tuple[
+    npt.NDArray[np.float32],
+    npt.NDArray[np.int32],
+    npt.NDArray[np.float32],
+    npt.NDArray[np.int32],
+]:
     """
     Split training data into train and validation sets.
 

@@ -5,8 +5,6 @@ This script demonstrates how to use the data pipeline
 in a real training scenario.
 """
 
-from typing import Any
-
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
@@ -14,7 +12,11 @@ import numpy.typing as npt
 from .data_pipeline import MNISTDataPipeline
 
 
-def visualize_preprocessed_batch(x_batch: npt.NDArray[np.float32], y_batch: npt.NDArray[np.float32], n_samples: int = 16) -> None:
+def visualize_preprocessed_batch(
+    x_batch: npt.NDArray[np.float32],
+    y_batch: npt.NDArray[np.float32],
+    n_samples: int = 16,
+) -> None:
     """Visualize a batch of preprocessed images."""
     n_show = min(n_samples, len(x_batch))
     n_cols = int(np.sqrt(n_show))
