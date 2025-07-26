@@ -12,6 +12,7 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 import tensorflow as tf
+from PIL import Image
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -169,8 +170,6 @@ def save_sample_images(
         num_samples: Number of samples to save
         output_dir: Directory to save samples
     """
-    from PIL import Image
-
     # Create output directory
     Path(output_dir).mkdir(parents=True, exist_ok=True)
 

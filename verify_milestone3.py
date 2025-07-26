@@ -8,6 +8,14 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
+from tensorflow import keras
+
+from src.mnist_classifier.models.cnn_model import (
+    compile_model,
+    create_cnn_model,
+)
+from src.mnist_classifier.training.train import MNISTTrainer
 
 
 def check_mark(condition):
@@ -29,7 +37,7 @@ def check_files_exist():
 
     all_exist = True
     for filepath, description in required_files:
-        exists = os.path.exists(filepath)
+        exists = Path(filepath).exists()
         print(f"  {check_mark(exists)} {description}: {filepath}")
         if not exists:
             all_exist = False
@@ -42,11 +50,6 @@ def check_model_creation():
     print("\n🏗️ Testing model creation:")
 
     try:
-        from src.mnist_classifier.models.cnn_model import (
-            compile_model,
-            create_cnn_model,
-        )
-
         # Create model
         model = create_cnn_model()
         model = compile_model(model)
@@ -90,8 +93,6 @@ def check_training_capability():
     print("\n🏃 Testing training capability:")
 
     try:
-        from src.mnist_classifier.training.train import MNISTTrainer
-
         # Check key methods exist
         trainer = MNISTTrainer()
         methods = ["prepare_data", "create_model", "train", "evaluate"]
@@ -123,12 +124,12 @@ def check_trained_model():
     model_path = None
 
     for model_dir in model_dirs:
-        if os.path.exists(model_dir):
+        if Path(model_dir).exists():
             # Look for .h5 files
-            for root, dirs, files in os.walk(model_dir):
+            for root, _dirs, files in os.walk(model_dir):
                 for file in files:
                     if file.endswith(".h5"):
-                        model_path = os.path.join(root, file)
+                        model_path = Path(root) / file
                         found_model = True
                         break
                 if found_model:
@@ -144,17 +145,13 @@ def check_trained_model():
     # If model found, try to load and check accuracy
     if found_model:
         try:
-            from tensorflow import keras
-
-            model = keras.models.load_model(model_path)
+            keras.models.load_model(str(model_path))
 
             # Check if training history exists
             exp_dir = Path(model_path).parent.parent
             history_file = exp_dir / "training_history.csv"
 
             if history_file.exists():
-                import pandas as pd
-
                 history = pd.read_csv(history_file)
 
                 if "val_accuracy" in history.columns:
@@ -165,7 +162,7 @@ def check_trained_model():
                     )
                     return best_val_acc > 0.98
 
-            print("  ℹ️  Could not verify accuracy (no history file)")
+            print("  INFO: Could not verify accuracy (no history file)")
             return True  # Model exists at least
 
         except Exception as e:
@@ -181,11 +178,11 @@ def check_documentation():
 
     doc_path = "docs/model_architecture.md"
 
-    if not os.path.exists(doc_path):
+    if not Path(doc_path).exists():
         print(f"  {check_mark(False)} Documentation not found")
         return False
 
-    with open(doc_path) as f:
+    with Path(doc_path).open() as f:
         content = f.read()
 
     # Check for key sections
@@ -223,7 +220,7 @@ def check_helper_scripts():
 
     all_exist = True
     for script, description in scripts:
-        exists = os.path.exists(script)
+        exists = Path(script).exists()
         print(f"  {check_mark(exists)} {description}: {script}")
         if not exists:
             all_exist = False
@@ -237,13 +234,13 @@ def main():
     print("=" * 50)
 
     # Make sure we're in the right directory
-    if not os.path.exists("src/mnist_classifier"):
+    if not Path("src/mnist_classifier").exists():
         print("❌ Error: Not in project root directory!")
         print("Please run this from the mnist_classifier project root.")
         sys.exit(1)
 
     # Add project root to path
-    sys.path.insert(0, os.path.abspath("."))
+    sys.path.insert(0, str(Path().resolve()))
 
     # Run all checks
     checks = [

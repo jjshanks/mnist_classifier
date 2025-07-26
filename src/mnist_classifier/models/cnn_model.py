@@ -6,6 +6,7 @@ recognizing handwritten digits from the MNIST dataset.
 """
 
 import json
+from pathlib import Path
 
 import numpy as np
 from tensorflow import keras
@@ -119,9 +120,7 @@ def create_cnn_model(
     )(x)
 
     # Create model
-    model = keras.Model(inputs=inputs, outputs=outputs, name=name)
-
-    return model
+    return keras.Model(inputs=inputs, outputs=outputs, name=name)
 
 
 def create_simple_model(
@@ -146,7 +145,7 @@ def create_simple_model(
         Compiled Keras model
     """
 
-    model = keras.Sequential(
+    model: keras.Model = keras.Sequential(
         [
             # Input layer
             keras.Input(shape=input_shape),
@@ -163,7 +162,6 @@ def create_simple_model(
         ],
         name=name,
     )
-
     return model
 
 
@@ -251,7 +249,7 @@ def count_parameters(model: keras.Model) -> dict[str, int]:
 
 def save_model_architecture(
     model: keras.Model, filepath: str = "models/architecture.json"
-):
+) -> None:
     """
     Save model architecture to JSON file.
 
@@ -259,9 +257,7 @@ def save_model_architecture(
         model: Keras model
         filepath: Where to save architecture
     """
-    import os
-
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    Path(filepath).parent.mkdir(parents=True, exist_ok=True)
 
     # Get architecture as JSON
     architecture = json.loads(model.to_json())
@@ -279,13 +275,13 @@ def save_model_architecture(
     full_architecture = {"metadata": metadata, "architecture": architecture}
 
     # Save
-    with open(filepath, "w") as f:
+    with Path(filepath).open("w") as f:
         json.dump(full_architecture, f, indent=2)
 
 
 def create_model_visualization(
     model: keras.Model, save_path: str = "models/model_plot.png"
-):
+) -> None:
     """
     Create a visualization of the model architecture.
 
@@ -293,9 +289,7 @@ def create_model_visualization(
         model: Keras model
         save_path: Where to save the visualization
     """
-    import os
-
-    os.makedirs(os.path.dirname(save_path), exist_ok=True)
+    Path(save_path).parent.mkdir(parents=True, exist_ok=True)
 
     try:
         keras.utils.plot_model(

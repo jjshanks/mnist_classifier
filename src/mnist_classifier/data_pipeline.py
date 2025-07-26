@@ -8,6 +8,7 @@ easy-to-use pipeline for training neural networks.
 import json
 import logging
 import pickle
+import time
 from collections.abc import Generator
 from pathlib import Path
 from typing import Any
@@ -296,8 +297,6 @@ def verify_data_pipeline() -> dict[str, Any]:
 
     # Test 2: Cache functionality
     print("\n2. Testing cache functionality...")
-    import time
-
     start_time = time.time()
     pipeline.prepare_data(validation_split=0.15)
     cache_time = time.time() - start_time

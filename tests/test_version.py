@@ -1,6 +1,6 @@
 """Test version information."""
 
-from mnist_classifier import __version__
+from src.mnist_classifier import __version__
 
 
 def test_version() -> None:

@@ -8,14 +8,14 @@ import os
 import subprocess
 import sys
 
+import train_model
+
 
 def main():
     """Check and restart with proper CUDA environment if needed."""
     # Check if we're in WSL2
     if "microsoft" not in os.uname().release.lower():
         # Not WSL2, just run normally
-        import train_model
-
         train_model.main()
         return
 
@@ -25,8 +25,6 @@ def main():
 
     if wsl_cuda_path in current_ld_path:
         # Already configured, run normally
-        import train_model
-
         train_model.main()
     else:
         # Need to restart with proper environment
@@ -40,7 +38,7 @@ def main():
         new_env["TF_CPP_MIN_LOG_LEVEL"] = "2"  # Reduce TensorFlow verbosity
 
         # Restart Python with the same arguments but proper environment
-        cmd = [sys.executable, "train_model.py"] + sys.argv[1:]
+        cmd = [sys.executable, "train_model.py", *sys.argv[1:]]
 
         # Run the command with the new environment
         result = subprocess.run(cmd, env=new_env, check=False)

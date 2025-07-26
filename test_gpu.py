@@ -2,6 +2,7 @@
 """Test GPU configuration and availability."""
 
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -13,13 +14,13 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 # Import and run GPU setup BEFORE importing TensorFlow
 print("Setting up GPU environment...")
-from src.mnist_classifier.utils import setup_gpu_environment
+from src.mnist_classifier.utils import setup_gpu_environment  # noqa: E402
 
 setup_gpu_environment()
 
 # Now import TensorFlow
 print("\nImporting TensorFlow...")
-import tensorflow as tf
+import tensorflow as tf  # noqa: E402
 
 print("\n" + "=" * 50)
 print("GPU Configuration Test")
@@ -62,7 +63,6 @@ else:
 print("\n" + "=" * 50)
 print("Environment Variables")
 print("=" * 50)
-import os
 
 print(f"LD_LIBRARY_PATH: {os.environ.get('LD_LIBRARY_PATH', 'Not set')}")
 print(f"CUDNN_PATH: {os.environ.get('CUDNN_PATH', 'Not set')}")

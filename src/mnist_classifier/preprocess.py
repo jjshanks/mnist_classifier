@@ -183,7 +183,8 @@ def decode_one_hot_labels(one_hot: npt.NDArray[np.float32]) -> npt.NDArray[np.in
     Returns:
         Integer labels of shape (n_samples,)
     """
-    return np.argmax(one_hot, axis=1).astype(np.int64)
+    result: npt.NDArray[np.int64] = np.argmax(one_hot, axis=1).astype(np.int64)
+    return result
 
 
 def create_train_validation_split(

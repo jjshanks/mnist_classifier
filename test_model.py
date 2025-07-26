@@ -10,6 +10,8 @@ Usage:
 
 import argparse
 import sys
+import traceback
+from collections import Counter
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -23,10 +25,13 @@ from src.mnist_classifier.utils import setup_gpu_environment
 
 setup_gpu_environment()
 
-from tensorflow import keras
+from tensorflow import keras  # noqa: E402
 
-from src.mnist_classifier.data_pipeline import MNISTDataPipeline
-from src.mnist_classifier.preprocess import normalize_pixels, reshape_images
+from src.mnist_classifier.data_pipeline import MNISTDataPipeline  # noqa: E402
+from src.mnist_classifier.preprocess import (  # noqa: E402
+    normalize_pixels,
+    reshape_images,
+)
 
 
 def load_latest_model(
@@ -145,8 +150,6 @@ def test_on_test_set(model: keras.Model):
     # Confusion analysis
     if len(error_indices) > 0:
         print("\nMost common confusions:")
-        from collections import Counter
-
         confusions = []
         for idx in error_indices:
             confusions.append(f"{y_true[idx]}→{y_pred[idx]}")
@@ -244,8 +247,6 @@ def main():
 
     except Exception as e:
         print(f"\n❌ Error: {e}")
-        import traceback
-
         traceback.print_exc()
         sys.exit(1)
 

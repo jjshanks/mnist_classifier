@@ -4,12 +4,16 @@ import logging
 import os
 import platform
 import site
+import sys
+import traceback
 from pathlib import Path
+
+import tensorflow as tf
 
 logger = logging.getLogger(__name__)
 
 
-def configure_gpu_and_cuda():
+def configure_gpu_and_cuda() -> None:
     """Configure GPU settings and CUDA paths for TensorFlow XLA compilation.
 
     This function sets up the necessary environment variables to help TensorFlow's
@@ -33,8 +37,6 @@ def configure_gpu_and_cuda():
     search_paths = []
 
     # Add current virtual environment paths first (highest priority)
-    import sys
-
     if hasattr(sys, "prefix"):
         venv_site = (
             Path(sys.prefix)
@@ -83,7 +85,8 @@ def configure_gpu_and_cuda():
                 # So we need to create a symlink or use the lib directory directly
                 cuda_data_dir = str(path)  # Use the lib directory directly
             elif "nvidia/cuda_nvcc/nvvm/libdevice" in str(path):
-                # NVIDIA package structure: nvidia/cuda_nvcc/nvvm/libdevice/libdevice.10.bc
+                # NVIDIA package structure:
+                # nvidia/cuda_nvcc/nvvm/libdevice/libdevice.10.bc
                 # XLA expects: <cuda_data_dir>/nvvm/libdevice/libdevice.10.bc
                 # So we need to go up to cuda_nvcc directory
                 cuda_data_dir = str(path.parent.parent)  # Points to cuda_nvcc
@@ -98,21 +101,21 @@ def configure_gpu_and_cuda():
             break
 
     if not libdevice_found:
-        logger.warning(
+        warning_msg = (
             "Could not find libdevice.10.bc in standard locations. "
-            "GPU compilation may fail. Consider installing nvidia-cuda-nvcc-cu12 package."
+            "GPU compilation may fail. Consider installing "
+            "nvidia-cuda-nvcc-cu12 package."
         )
+        logger.warning(warning_msg)
 
     # Update environment
     os.environ["XLA_FLAGS"] = xla_flags.strip()
     logger.debug(f"XLA_FLAGS set to: {os.environ['XLA_FLAGS']}")
 
 
-def configure_tensorflow_gpu():
+def configure_tensorflow_gpu() -> None:
     """Configure TensorFlow GPU settings for optimal performance."""
     try:
-        import tensorflow as tf
-
         # Suppress TensorFlow warnings about duplicate library registrations
         os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
@@ -135,24 +138,20 @@ def configure_tensorflow_gpu():
 
             # Test GPU availability
             logger.info(f"TensorFlow built with CUDA: {tf.test.is_built_with_cuda()}")
-            logger.info(
-                f"CUDA version: {tf.sysconfig.get_build_info().get('cuda_version', 'Unknown')}"
-            )
-            logger.info(
-                f"cuDNN version: {tf.sysconfig.get_build_info().get('cudnn_version', 'Unknown')}"
-            )
+            cuda_ver = tf.sysconfig.get_build_info().get("cuda_version", "Unknown")
+            logger.info(f"CUDA version: {cuda_ver}")
+            cudnn_ver = tf.sysconfig.get_build_info().get("cudnn_version", "Unknown")
+            logger.info(f"cuDNN version: {cudnn_ver}")
         else:
             logger.warning("No GPUs found by TensorFlow, using CPU")
             logger.info("Check nvidia-smi output and CUDA installation")
 
     except Exception as e:
         logger.error(f"Error configuring TensorFlow GPU: {e}")
-        import traceback
-
         logger.debug(traceback.format_exc())
 
 
-def configure_wsl2_cuda_paths():
+def configure_wsl2_cuda_paths() -> None:
     """Configure CUDA library paths for WSL2 environment."""
     # Check if we're running in WSL2
     if platform.system() == "Linux" and "microsoft" in platform.release().lower():
@@ -180,7 +179,7 @@ def configure_wsl2_cuda_paths():
             )
 
 
-def setup_gpu_environment():
+def setup_gpu_environment() -> None:
     """Complete GPU environment setup."""
     # Configure WSL2 CUDA paths first (must be done before TensorFlow import)
     configure_wsl2_cuda_paths()

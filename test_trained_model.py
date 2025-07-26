@@ -3,7 +3,11 @@
 
 import os
 import sys
+from collections import Counter
 from pathlib import Path
+
+import numpy as np
+from tensorflow import keras
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -14,15 +18,12 @@ setup_gpu_environment()
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
-import numpy as np
-from tensorflow import keras
-
 # Load the latest model
 model_path = "models/experiments/mnist_standard_20250724_205451/final_model.h5"
 model = keras.models.load_model(model_path)
 
 # Load test data
-from src.mnist_classifier.data_pipeline import MNISTDataPipeline
+from src.mnist_classifier.data_pipeline import MNISTDataPipeline  # noqa: E402
 
 pipeline = MNISTDataPipeline()
 data = pipeline.prepare_data(use_cache=False)
@@ -51,8 +52,6 @@ print(f"   Error rate: {total_errors/100:.2f}%")
 
 # Most confused pairs
 if total_errors > 0:
-    from collections import Counter
-
     confusions = []
     error_indices = np.where(errors)[0]
     for idx in error_indices:

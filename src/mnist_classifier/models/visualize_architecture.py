@@ -7,9 +7,13 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
+from typing import Any
+
 import matplotlib.pyplot as plt
 import numpy as np
+from tensorflow import keras
 
+from src.mnist_classifier.data_pipeline import MNISTDataPipeline
 from src.mnist_classifier.models.cnn_model import (
     count_parameters,
     create_cnn_model,
@@ -17,12 +21,8 @@ from src.mnist_classifier.models.cnn_model import (
 )
 
 
-def visualize_layer_outputs():
+def visualize_layer_outputs() -> None:
     """Visualize intermediate layer outputs."""
-    from tensorflow import keras
-
-    from src.mnist_classifier.data_pipeline import MNISTDataPipeline
-
     # Load model and data
     model = create_cnn_model()
     pipeline = MNISTDataPipeline()
@@ -35,7 +35,9 @@ def visualize_layer_outputs():
     # Create model for layer outputs
     layer_names = ["conv1", "conv2", "conv3"]
     layer_outputs = [model.get_layer(name).output for name in layer_names]
-    activation_model = keras.Model(inputs=model.input, outputs=layer_outputs)
+    activation_model: keras.Model[Any, Any] = keras.Model(
+        inputs=model.input, outputs=layer_outputs
+    )
 
     # Get activations
     activations = activation_model.predict(sample_img)
@@ -80,7 +82,7 @@ def visualize_layer_outputs():
     plt.show()
 
 
-def compare_architectures():
+def compare_architectures() -> None:
     """Compare different model architectures."""
     # Create models
     standard_model = create_cnn_model()
@@ -131,9 +133,8 @@ def compare_architectures():
     print(f"  Total parameters: {simple_params['total']:,}")
     print(f"  Trainable: {simple_params['trainable']:,}")
     print(f"  Layers: {len(simple_model.layers)}")
-    print(
-        f"\nParameter Reduction: {standard_params['total'] / simple_params['total']:.1f}x"
-    )
+    reduction = standard_params["total"] / simple_params["total"]
+    print(f"\nParameter Reduction: {reduction:.1f}x")
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ Usage:
 import argparse
 import os
 import sys
+import traceback
 from pathlib import Path
 
 # CRITICAL: Set WSL2 CUDA paths before ANY imports that might load CUDA
@@ -36,7 +37,7 @@ from src.mnist_classifier.utils import setup_gpu_environment
 
 setup_gpu_environment()
 
-from src.mnist_classifier.training.train import run_training_experiment
+from src.mnist_classifier.training.train import run_training_experiment  # noqa: E402
 
 
 def main():
@@ -134,8 +135,6 @@ Examples:
         sys.exit(1)
     except Exception as e:
         print(f"\n\n❌ Training failed: {e}")
-        import traceback
-
         traceback.print_exc()
         sys.exit(1)
 

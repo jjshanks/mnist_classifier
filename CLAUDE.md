@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an MNIST digit classifier project using TensorFlow and FastAPI. The project is currently at Milestone 2 (Data Acquisition and Preparation) completed of a 6-milestone roadmap. It's configured with modern Python 3.13 tooling and follows best practices for ML projects.
+This is an MNIST digit classifier project using TensorFlow and FastAPI. The project is currently at Milestone 3 (Neural Network for Digit Classification) completed of a 6-milestone roadmap. It's configured with modern Python 3.13 tooling and follows best practices for ML projects.
 
 ## Essential Commands
 

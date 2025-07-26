@@ -8,6 +8,9 @@ import sys
 import time
 from pathlib import Path
 
+import numpy as np
+import tensorflow as tf
+
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -15,7 +18,6 @@ sys.path.insert(0, str(Path(__file__).parent))
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Suppress most TF messages
 
 print("Loading TensorFlow and checking devices...")
-import tensorflow as tf
 
 # Check available devices
 gpus = tf.config.list_physical_devices("GPU")
@@ -51,7 +53,6 @@ model.compile(
 
 # Generate dummy data
 print("Generating test data...")
-import numpy as np
 
 x_train = np.random.random((10000, 28, 28, 1)).astype(np.float32)
 y_train = np.random.randint(0, 10, 10000)

@@ -7,7 +7,7 @@ from .gpu_config import (
 )
 
 __all__ = [
-    "setup_gpu_environment",
     "configure_gpu_and_cuda",
     "configure_tensorflow_gpu",
+    "setup_gpu_environment",
 ]

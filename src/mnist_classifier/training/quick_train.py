@@ -7,10 +7,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from src.mnist_classifier.training.train import run_training_experiment
+from src.mnist_classifier.training.train import MNISTTrainer, run_training_experiment
 
 
-def quick_train():
+def quick_train() -> MNISTTrainer:
     """Run a quick training session with reduced epochs."""
     print("🚀 Quick Training Mode")
     print("=" * 50)

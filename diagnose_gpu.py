@@ -6,8 +6,11 @@ This script helps identify and fix GPU configuration issues.
 
 import os
 import platform
+import site
 import subprocess
 from pathlib import Path
+
+import tensorflow as tf
 
 
 # Colors for terminal output
@@ -67,9 +70,8 @@ def check_nvidia_smi():
             print_success("nvidia-smi found")
             print(f"GPU: {result.stdout.strip()}")
             return True
-        else:
-            print_error("nvidia-smi failed")
-            return False
+        print_error("nvidia-smi failed")
+        return False
     except FileNotFoundError:
         print_error("nvidia-smi not found in PATH")
         return False
@@ -92,8 +94,6 @@ def check_cuda_libraries():
 
     # Check Python site-packages
     try:
-        import site
-
         site_packages = Path(site.getsitepackages()[0])
 
         # Check for nvidia packages
@@ -150,8 +150,6 @@ def check_tensorflow():
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
     try:
-        import tensorflow as tf
-
         print_success(f"TensorFlow {tf.__version__} imported successfully")
 
         # Check build info
@@ -173,9 +171,8 @@ def check_tensorflow():
                 print_success(f"GPU computation successful! Result shape: {c.shape}")
 
             return True
-        else:
-            print_error("No GPUs found by TensorFlow")
-            return False
+        print_error("No GPUs found by TensorFlow")
+        return False
 
     except Exception as e:
         print_error(f"TensorFlow error: {e}")
@@ -200,9 +197,9 @@ def generate_fix_script(libraries_found):
             paths.append(lib_path)
 
     print("Add this to your ~/.bashrc or use before running Python:")
-    print(
-        f"\n{Colors.YELLOW}export LD_LIBRARY_PATH={':'.join(paths)}:$LD_LIBRARY_PATH{Colors.END}"
-    )
+    ld_path = ":".join(paths)
+    export_cmd = f"export LD_LIBRARY_PATH={ld_path}:$LD_LIBRARY_PATH"
+    print(f"\n{Colors.YELLOW}{export_cmd}{Colors.END}")
     print(f"{Colors.YELLOW}export TF_CPP_MIN_LOG_LEVEL=2{Colors.END}\n")
 
     print("Or use the provided training script:")
@@ -214,7 +211,7 @@ def main():
     print_header("TensorFlow GPU Diagnostics")
 
     # Run checks
-    is_wsl2 = check_system()
+    check_system()
     has_nvidia = check_nvidia_smi()
     libraries_found = check_cuda_libraries()
     check_environment()

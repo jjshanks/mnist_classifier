@@ -9,27 +9,31 @@ This module handles the complete training pipeline including:
 - Model saving and export
 """
 
+import argparse
 import json
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
+import seaborn as sns  # type: ignore[import-not-found]
 import tensorflow as tf
+from sklearn.metrics import confusion_matrix  # type: ignore[import-not-found]
 from tensorflow import keras
 
 # Add project root to path
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.mnist_classifier.data_pipeline import MNISTDataPipeline
-from src.mnist_classifier.models.cnn_model import (
+from src.mnist_classifier.data_pipeline import MNISTDataPipeline  # noqa: E402
+from src.mnist_classifier.models.cnn_model import (  # noqa: E402
     compile_model,
     count_parameters,
     create_cnn_model,
+    create_simple_model,
 )
 
 
@@ -74,12 +78,12 @@ class MNISTTrainer:
         self.plot_dir.mkdir(exist_ok=True)
 
         # Initialize attributes
-        self.model = None
-        self.history = None
-        self.data = None
-        self.config = None
+        self.model: keras.Model | None = None
+        self.history: keras.callbacks.History | None = None
+        self.data: dict[str, Any] | None = None
+        self.config: dict[str, Any] | None = None
 
-    def prepare_data(self, validation_split: float = 0.1) -> dict:
+    def prepare_data(self, validation_split: float = 0.1) -> dict[str, Any]:
         """
         Load and prepare data for training.
 
@@ -99,18 +103,22 @@ class MNISTTrainer:
         )
 
         print("✅ Data prepared:")
-        print(f"   Training: {self.data['x_train'].shape}")
-        print(f"   Validation: {self.data['x_val'].shape}")
-        print(f"   Test: {self.data['x_test'].shape}")
+        if self.data:
+            print(f"   Training: {self.data['x_train'].shape}")
+            print(f"   Validation: {self.data['x_val'].shape}")
+            print(f"   Test: {self.data['x_test'].shape}")
 
         return self.data
 
-    def create_model(self, model_type: str = "standard") -> keras.Model:
+    def create_model(
+        self, model_type: str = "standard", learning_rate: float = 0.001
+    ) -> keras.Model:
         """
         Create and compile the model.
 
         Args:
             model_type: 'standard' or 'simple'
+            learning_rate: Learning rate for optimizer
 
         Returns:
             Compiled Keras model
@@ -120,11 +128,9 @@ class MNISTTrainer:
         if model_type == "standard":
             self.model = create_cnn_model()
         else:
-            from src.mnist_classifier.models.cnn_model import create_simple_model
-
             self.model = create_simple_model()
 
-        self.model = compile_model(self.model)
+        self.model = compile_model(self.model, learning_rate=learning_rate)
 
         # Display model info
         params = count_parameters(self.model)
@@ -141,7 +147,7 @@ class MNISTTrainer:
         Returns:
             List of Keras callbacks
         """
-        callbacks = []
+        callbacks: list[keras.callbacks.Callback] = []
 
         # 1. Model Checkpoint - Save best model
         checkpoint_path = self.checkpoint_dir / "best_model.h5"
@@ -196,16 +202,20 @@ class MNISTTrainer:
 
         # 6. Custom Progress Callback
         class TrainingProgress(keras.callbacks.Callback):
-            def on_epoch_end(self, epoch, logs=None):
+            def on_epoch_end(self, epoch: int, logs: Any = None) -> None:
                 logs = logs or {}
                 print(f"\n📈 Epoch {epoch + 1} Summary:")
                 print(f"   Train Loss: {logs.get('loss', 0):.4f}")
                 print(f"   Train Acc: {logs.get('accuracy', 0):.4f}")
                 print(f"   Val Loss: {logs.get('val_loss', 0):.4f}")
                 print(f"   Val Acc: {logs.get('val_accuracy', 0):.4f}")
-                print(
-                    f"   Learning Rate: {self.model.optimizer.learning_rate.numpy():.6f}"
-                )
+                if (
+                    self.model
+                    and self.model.optimizer
+                    and hasattr(self.model.optimizer, "learning_rate")
+                ):
+                    lr = self.model.optimizer.learning_rate.numpy()
+                    print(f"   Learning Rate: {lr:.6f}")
 
         callbacks.append(TrainingProgress())
 
@@ -217,7 +227,8 @@ class MNISTTrainer:
         batch_size: int = 128,
         model_type: str = "standard",
         validation_split: float = 0.1,
-    ) -> dict:
+        learning_rate: float = 0.001,
+    ) -> dict[str, Any]:
         """
         Complete training pipeline.
 
@@ -244,7 +255,7 @@ class MNISTTrainer:
         }
 
         # Save configuration
-        with open(self.output_dir / "config.json", "w") as f:
+        with (self.output_dir / "config.json").open("w") as f:
             json.dump(self.config, f, indent=2)
 
         # Prepare data
@@ -253,7 +264,7 @@ class MNISTTrainer:
 
         # Create model
         if self.model is None:
-            self.create_model(model_type)
+            self.create_model(model_type, learning_rate)
 
         # Create callbacks
         callbacks = self.create_callbacks()
@@ -261,10 +272,14 @@ class MNISTTrainer:
         # Start training
         print(f"\n🏃 Training for up to {epochs} epochs...")
         print(f"   Batch size: {batch_size}")
+        if self.data is None:
+            raise ValueError("Data not prepared. Call prepare_data() first.")
         print(f"   Steps per epoch: {len(self.data['x_train']) // batch_size}")
 
         start_time = time.time()
 
+        if self.model is None:
+            raise ValueError("Model not created. Call create_model() first.")
         self.history = self.model.fit(
             x=self.data["x_train"],
             y=self.data["y_train"],
@@ -295,7 +310,7 @@ class MNISTTrainer:
         # Save training summary
         self.save_training_summary(training_time)
 
-        return self.history.history
+        return dict(self.history.history)
 
     def evaluate(self) -> dict[str, float]:
         """
@@ -306,9 +321,22 @@ class MNISTTrainer:
         """
         print("\n📏 Evaluating on test set...")
 
-        test_loss, test_acc, test_top3 = self.model.evaluate(
+        if self.model is None or self.data is None:
+            raise ValueError("Model or data not available for evaluation")
+
+        test_results = self.model.evaluate(
             self.data["x_test"], self.data["y_test"], batch_size=256, verbose=1
         )
+
+        # Handle both single and multiple metrics
+        if isinstance(test_results, list):
+            test_loss = test_results[0]
+            test_acc = test_results[1] if len(test_results) > 1 else 0.0
+            test_top3 = test_results[2] if len(test_results) > 2 else 0.0
+        else:
+            test_loss = test_results
+            test_acc = 0.0
+            test_top3 = 0.0
 
         results = {
             "test_loss": test_loss,
@@ -323,11 +351,14 @@ class MNISTTrainer:
 
         return results
 
-    def save_model(self):
+    def save_model(self) -> None:
         """Save model in multiple formats."""
         print("\n💾 Saving model...")
 
         # Save Keras model
+        if self.model is None:
+            print("   Error: No model to save")
+            return
         model_path = self.output_dir / "final_model.h5"
         self.model.save(str(model_path))
         print(f"   Saved Keras model: {model_path}")
@@ -345,15 +376,18 @@ class MNISTTrainer:
         # Save TFLite version for mobile
         self.save_tflite_model()
 
-    def save_tflite_model(self):
+    def save_tflite_model(self) -> None:
         """Convert and save TFLite model for mobile deployment."""
         try:
+            if self.model is None:
+                print("   Error: No model to convert")
+                return
             converter = tf.lite.TFLiteConverter.from_keras_model(self.model)
             converter.optimizations = [tf.lite.Optimize.DEFAULT]
             tflite_model = converter.convert()
 
             tflite_path = self.output_dir / "model.tflite"
-            with open(tflite_path, "wb") as f:
+            with tflite_path.open("wb") as f:
                 f.write(tflite_model)
 
             print(f"   Saved TFLite model: {tflite_path}")
@@ -361,8 +395,11 @@ class MNISTTrainer:
         except Exception as e:
             print(f"   Could not save TFLite: {e}")
 
-    def plot_training_history(self):
+    def plot_training_history(self) -> None:
         """Plot training and validation metrics."""
+        if self.history is None:
+            print("   Error: No training history to plot")
+            return
         history = self.history.history
         epochs = range(1, len(history["loss"]) + 1)
 
@@ -396,11 +433,12 @@ class MNISTTrainer:
 
         print(f"   Saved training history plot: {plot_path}")
 
-    def plot_confusion_matrix(self):
+    def plot_confusion_matrix(self) -> None:
         """Create confusion matrix visualization."""
-        from sklearn.metrics import confusion_matrix
-
         # Get predictions
+        if self.model is None or self.data is None:
+            print("   Error: No model or data for confusion matrix")
+            return
         y_true = np.argmax(self.data["y_test"], axis=1)
         y_pred = np.argmax(self.model.predict(self.data["x_test"]), axis=1)
 
@@ -414,8 +452,8 @@ class MNISTTrainer:
             annot=True,
             fmt="d",
             cmap="Blues",
-            xticklabels=range(10),
-            yticklabels=range(10),
+            xticklabels=[str(i) for i in range(10)],
+            yticklabels=[str(i) for i in range(10)],
         )
         plt.title("Confusion Matrix", fontsize=16)
         plt.xlabel("Predicted Label")
@@ -433,9 +471,12 @@ class MNISTTrainer:
 
         print(f"   Saved confusion matrix: {plot_path}")
 
-    def visualize_predictions(self, n_samples: int = 20):
+    def visualize_predictions(self, n_samples: int = 20) -> None:
         """Visualize model predictions on test samples."""
         # Get random test samples
+        if self.model is None or self.data is None:
+            print("   Error: No model or data for predictions")
+            return
         indices = np.random.choice(len(self.data["x_test"]), n_samples, replace=False)
         x_samples = self.data["x_test"][indices]
         y_true = np.argmax(self.data["y_test"][indices], axis=1)
@@ -476,9 +517,12 @@ class MNISTTrainer:
 
         print(f"   Saved predictions visualization: {plot_path}")
 
-    def visualize_misclassified(self, n_samples: int = 20):
+    def visualize_misclassified(self, n_samples: int = 20) -> None:
         """Visualize misclassified examples."""
         # Get all predictions
+        if self.model is None or self.data is None:
+            print("   Error: No model or data for misclassified")
+            return
         y_true = np.argmax(self.data["y_test"], axis=1)
         y_pred_probs = self.model.predict(self.data["x_test"])
         y_pred = np.argmax(y_pred_probs, axis=1)
@@ -533,8 +577,11 @@ class MNISTTrainer:
 
         print(f"   Saved misclassified examples: {plot_path}")
 
-    def save_training_summary(self, training_time: float):
+    def save_training_summary(self, training_time: float) -> None:
         """Save comprehensive training summary."""
+        if self.model is None or self.history is None:
+            print("   Error: No model or history to save")
+            return
         summary = {
             "run_name": self.run_name,
             "config": self.config,
@@ -560,7 +607,7 @@ class MNISTTrainer:
 
         # Save summary
         summary_path = self.output_dir / "training_summary.json"
-        with open(summary_path, "w") as f:
+        with summary_path.open("w") as f:
             json.dump(summary, f, indent=2)
 
         print(f"\n📝 Training summary saved: {summary_path}")
@@ -568,11 +615,11 @@ class MNISTTrainer:
         # Create readable report
         self.create_training_report(summary)
 
-    def create_training_report(self, summary: dict):
+    def create_training_report(self, summary: dict[str, Any]) -> None:
         """Create human-readable training report."""
         report_path = self.output_dir / "training_report.txt"
 
-        with open(report_path, "w") as f:
+        with report_path.open("w") as f:
             f.write("MNIST CNN Training Report\n")
             f.write(f"{'=' * 60}\n\n")
 
@@ -588,12 +635,10 @@ class MNISTTrainer:
             )
 
             f.write("Model Architecture:\n")
-            f.write(
-                f"  Total Parameters: {summary['model_info']['parameters']['total']:,}\n"
-            )
-            f.write(
-                f"  Trainable Parameters: {summary['model_info']['parameters']['trainable']:,}\n"
-            )
+            total_params = summary["model_info"]["parameters"]["total"]
+            f.write(f"  Total Parameters: {total_params:,}\n")
+            trainable_params = summary["model_info"]["parameters"]["trainable"]
+            f.write(f"  Trainable Parameters: {trainable_params:,}\n")
             f.write(f"  Number of Layers: {summary['model_info']['layers']}\n\n")
 
             f.write("Training Results:\n")
@@ -604,12 +649,10 @@ class MNISTTrainer:
             f.write(f"  Best Epoch: {summary['best_epoch']}\n\n")
 
             f.write("Final Metrics:\n")
-            f.write(
-                f"  Training Accuracy: {summary['final_metrics']['train_accuracy']:.4f}\n"
-            )
-            f.write(
-                f"  Validation Accuracy: {summary['final_metrics']['val_accuracy']:.4f}\n"
-            )
+            train_acc = summary["final_metrics"]["train_accuracy"]
+            f.write(f"  Training Accuracy: {train_acc:.4f}\n")
+            val_acc = summary["final_metrics"]["val_accuracy"]
+            f.write(f"  Validation Accuracy: {val_acc:.4f}\n")
             f.write(f"  Training Loss: {summary['final_metrics']['train_loss']:.4f}\n")
             f.write(f"  Validation Loss: {summary['final_metrics']['val_loss']:.4f}\n")
 
@@ -658,11 +701,12 @@ def run_training_experiment(
     trainer = MNISTTrainer(model_name=f"mnist_{model_type}")
 
     # Run training
-    history = trainer.train(
+    trainer.train(
         epochs=epochs,
         batch_size=batch_size,
         model_type=model_type,
         validation_split=validation_split,
+        learning_rate=learning_rate,
     )
 
     # Additional visualizations
@@ -675,7 +719,6 @@ if __name__ == "__main__":
     """
     Run training with default parameters.
     """
-    import argparse
 
     parser = argparse.ArgumentParser(description="Train MNIST CNN model")
     parser.add_argument(

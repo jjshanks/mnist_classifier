@@ -10,7 +10,8 @@
       "Bash(mkdir:*)",
       "Bash(uv pip:*)",
       "Bash(echo $LD_LIBRARY_PATH)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(uv run:*)"
     ],
     "deny": []
   }

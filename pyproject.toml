@@ -97,7 +97,6 @@ warn_unused_ignores = true
 warn_unreachable = true
 strict_equality = true
 explicit_package_bases = true
-mypy_path = "src"
 
 [[tool.mypy.overrides]]
 module = ["tensorflow.*", "numpy", "numpy.typing", "matplotlib", "matplotlib.pyplot"]
@@ -113,6 +112,7 @@ packages = ["src"]
 
 [tool.uv]
 dev-dependencies = [
+    "types-seaborn>=0.13.2.20250516",
     "types-tensorflow>=2.18.0.20250516",
 ]
 
