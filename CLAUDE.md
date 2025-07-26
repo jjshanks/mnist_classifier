@@ -21,40 +21,44 @@ uv sync --all-extras
 ### Code Quality
 ```bash
 # Run all pre-commit hooks
-pre-commit run --all-files
+uv run pre-commit run --all-files
 
 # Format code
-ruff format
+uv run ruff format
 
 # Lint and auto-fix
-ruff check --fix
+uv run ruff check --fix
 
 # Type checking
-mypy src tests
+uv run mypy src tests
 
 # Security scanning
-bandit -c pyproject.toml -r src
+uv run bandit -c pyproject.toml -r src
 ```
 
 ### Testing
 ```bash
 # Run tests with coverage
-pytest
+uv run pytest
 ```
 
 ### Running the Application
 ```bash
 # Test data pipeline (Milestone 2)
-python quick_setup_data.py
+uv run python quick_setup_data.py
 
 # Run data pipeline verification
-python verify_milestone2.py
+uv run python verify_milestone2.py
 
-# Train model (once implemented)
-python src/train.py
+# Train model with GPU support (Milestone 3)
+./train_gpu.sh --epochs 10  # Recommended: handles GPU setup automatically
+# Or: uv run python train_model.py --epochs 10
+
+# Quick training test (5 epochs)
+./train_gpu.sh --quick
 
 # Start web server (once implemented)
-uvicorn src.main:app --reload
+uv run uvicorn src.main:app --reload
 ```
 
 ## Architecture and Structure
@@ -64,8 +68,12 @@ uvicorn src.main:app --reload
    - `load_data.py`: MNIST dataset downloading and loading
    - `preprocess.py`: Data normalization, reshaping, and encoding
    - `data_pipeline.py`: Integrated pipeline with caching
-2. **Model** (`src/mnist_classifier/models/`): TensorFlow neural network implementation (To be implemented)
-3. **Training** (`src/mnist_classifier/training/`): Model training, validation, and checkpoint management (To be implemented)
+2. **Model** (`src/mnist_classifier/models/`): TensorFlow neural network implementation (✅ Implemented in Milestone 3)
+   - `cnn_model.py`: CNN architecture with two convolutional layers
+   - Achieves >98% accuracy on MNIST
+3. **Training** (`src/mnist_classifier/training/`): Model training, validation, and checkpoint management (✅ Implemented in Milestone 3)
+   - `train.py`: Comprehensive training pipeline with callbacks
+   - `quick_train.py`: Quick training script for testing
 4. **CLI** (`src/mnist_classifier/cli/`): Command-line interface for training and prediction (To be implemented)
 5. **Web API** (`src/mnist_classifier/api/`): FastAPI endpoints for predictions (To be implemented)
 6. **Frontend** (`templates/` and `static/`): Interactive web interface (To be implemented)
@@ -83,8 +91,8 @@ uvicorn src.main:app --reload
 The project follows a structured 6-milestone plan:
 1. ✓ Project Foundation and Setup (Complete)
 2. ✓ Data Acquisition and Preparation (Complete)
-3. Neural Network for Digit Classification (Next)
-4. Command-Line Interface (CLI)
+3. ✓ Neural Network for Digit Classification (Complete)
+4. Command-Line Interface (CLI) (Next)
 5. Interactive Web Interface
 6. Visualizing the Neural Network State
 
@@ -96,6 +104,52 @@ Detailed milestone documentation is in `docs/ROADMAP.md` and individual mileston
 - Follow existing code structure patterns when adding new modules
 - The `data/` directory is gitignored for dataset storage
 - Run tests before committing changes
-- Pre-commit hooks automatically check code quality - run `pre-commit run --all-files` before committing
+- Pre-commit hooks automatically check code quality - run `uv run pre-commit run --all-files` before committing
 - Use `pathlib.Path` for all file operations, not `os.path`
 - Break complex assertions into multiple simple assertions for better error messages
+
+## GPU Support and Troubleshooting
+
+### GPU Setup for WSL2
+The project includes full GPU support for training. Use `./train_gpu.sh` which automatically:
+- Detects WSL2 environment
+- Configures CUDA library paths
+- Sets appropriate environment variables
+
+### Important GPU Dependencies
+The project uses `tensorflow[and-cuda]` which includes ALL necessary NVIDIA libraries:
+- CUDA runtime, cuDNN, cuBLAS, cuFFT, etc.
+- Do NOT install just `tensorflow` - it lacks GPU support libraries
+
+### Common GPU Issues and Solutions
+
+1. **"Error loading CUDA libraries. GPU will not be used"**
+   - **Cause**: Missing CUDA runtime libraries
+   - **Solution**: Ensure `tensorflow[and-cuda]` is installed (not just `tensorflow`)
+   - **Check**: Run `uv pip list | grep nvidia` - should show 10+ nvidia packages
+
+2. **"Cannot dlopen some GPU libraries"**
+   - **Cause**: LD_LIBRARY_PATH not set correctly
+   - **Solution**: Use `./train_gpu.sh` which sets paths automatically
+   - **Manual fix**: `export LD_LIBRARY_PATH=/usr/lib/wsl/lib:$(uv run python -c "import site; print(site.getsitepackages()[0])")/nvidia/cuda_runtime/lib:$LD_LIBRARY_PATH`
+
+3. **Model saving error: "Invalid filepath extension"**
+   - **Cause**: TensorFlow 2.19+ requires explicit extensions
+   - **Solution**: Use `model.export()` for SavedModel format, not `model.save()`
+
+4. **Missing sklearn for confusion matrix**
+   - **Solution**: `scikit-learn` is now included in dependencies
+
+### Verifying GPU Setup
+```bash
+# Quick GPU diagnostic
+uv run python diagnose_gpu.py
+
+# Check if GPU is detected
+uv run python -c "import tensorflow as tf; print('GPUs:', tf.config.list_physical_devices('GPU'))"
+```
+
+### Performance Notes
+- GPU training is 10-50x faster than CPU
+- Expect ~4-5ms per step on RTX 3080 Ti
+- Memory growth is enabled to prevent TensorFlow from allocating all GPU memory

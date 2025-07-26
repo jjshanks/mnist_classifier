@@ -6,7 +6,11 @@
       "Bash(ruff check:*)",
       "Bash(ruff format:*)",
       "Bash(mypy:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(mkdir:*)",
+      "Bash(uv pip:*)",
+      "Bash(echo $LD_LIBRARY_PATH)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }
