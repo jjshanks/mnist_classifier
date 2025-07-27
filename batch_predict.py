@@ -174,8 +174,8 @@ Examples:
     parser.add_argument(
         "--model",
         type=str,
-        default="models/mnist_model",
-        help="Path to the trained model (default: models/mnist_model)",
+        default="models/mnist_model.h5",
+        help="Path to the trained model (default: models/mnist_model.h5)",
     )
 
     parser.add_argument(

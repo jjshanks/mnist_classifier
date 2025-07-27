@@ -57,6 +57,9 @@ This project implements a complete ML pipeline for digit recognition:
 
    # Full training (10 epochs recommended)
    ./train_gpu.sh --epochs 10
+
+   # Set up model symlink for CLI tools
+   python setup_model_link.py
    ```
 
 6. **Run the web app** (after implementing):

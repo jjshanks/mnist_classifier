@@ -1,0 +1,11 @@
+filename,predicted_digit,confidence,status,error
+mnist_test_images/mnist_digit_0_1.png,0,1.0,success,
+mnist_test_images/mnist_digit_1_1.png,1,1.0,success,
+mnist_test_images/mnist_digit_2_1.png,2,1.0,success,
+mnist_test_images/mnist_digit_3_1.png,3,0.9992057085037231,success,
+mnist_test_images/mnist_digit_4_1.png,4,1.0,success,
+mnist_test_images/mnist_digit_5_1.png,5,0.998710036277771,success,
+mnist_test_images/mnist_digit_6_1.png,6,1.0,success,
+mnist_test_images/mnist_digit_7_1.png,7,1.0,success,
+mnist_test_images/mnist_digit_8_1.png,8,0.9999996423721313,success,
+mnist_test_images/mnist_digit_9_1.png,9,0.999998927116394,success,
