@@ -50,9 +50,13 @@ This project implements a complete ML pipeline for digit recognition:
    python quick_setup_data.py
    ```
 
-5. **Train the model** (after implementing):
+5. **Train the model** (Milestone 3 complete!):
    ```bash
-   python src/train.py
+   # Quick training (5 epochs)
+   ./train_gpu.sh --quick
+
+   # Full training (10 epochs recommended)
+   ./train_gpu.sh --epochs 10
    ```
 
 6. **Run the web app** (after implementing):
@@ -67,27 +71,20 @@ mnist_classifier/
 ├── src/
 │   └── mnist_classifier/      # Main package
 │       ├── __init__.py       # Package initialization
-│       ├── load_data.py      # MNIST data loading module
-│       ├── preprocess.py     # Data preprocessing functions
-│       ├── data_pipeline.py  # Integrated data pipeline
-│       ├── example_usage.py  # Pipeline usage examples
-│       └── py.typed          # Type checking marker
+│       ├── data/             # Data loading and preprocessing
+│       ├── models/           # Neural network models
+│       ├── training/         # Training pipeline
+│       └── cli/              # Command-line interface
 ├── tests/                    # Test suite
 ├── data/                     # Dataset storage (gitignored)
-│   ├── processed/            # Cached preprocessed data
-│   └── samples/              # Sample images
+├── models/                   # Saved models
 ├── notebooks/                # Jupyter notebooks
-│   └── 01_data_exploration.ipynb  # Data analysis notebook
 ├── docs/                     # Documentation
-│   ├── ROADMAP.md           # Project roadmap
-│   └── MILESTONE_*.md       # Detailed milestone guides
 ├── static/                   # Frontend assets (future)
 ├── templates/                # HTML templates (future)
-├── pyproject.toml            # Project configuration
-├── uv.lock                   # Locked dependencies
-├── CLAUDE.md                 # AI assistant instructions
-├── quick_setup_data.py       # Quick data setup script
-├── verify_milestone2.py      # Milestone verification
+├── predict_digit.py          # CLI tool for single predictions
+├── batch_predict.py          # CLI tool for batch predictions
+├── create_test_images.py     # Generate test images
 └── README.md                 # This file
 ```
 
@@ -97,23 +94,71 @@ mnist_classifier/
 - [FastAPI Documentation](https://fastapi.tiangolo.com)
 - [MNIST Database](http://yann.lecun.com/exdb/mnist/)
 
+## 🖥️ Command-Line Interface
+
+### Single Image Prediction
+
+```bash
+# Basic usage
+python predict_digit.py path/to/image.png
+
+# With custom model
+python predict_digit.py image.jpg --model models/my_model.keras
+
+# JSON output
+python predict_digit.py digit.png --output-format json
+
+# Quiet mode (digit only)
+python predict_digit.py digit.png --quiet
+```
+
+### Batch Processing
+
+```bash
+# Process multiple images
+python batch_predict.py images/*.png
+
+# Save results to CSV
+python batch_predict.py images/*.jpg --output results.csv
+
+# JSON output
+python batch_predict.py images/*.png --format json
+
+# Recursive directory search
+python batch_predict.py images/ --recursive
+```
+
+### Create Test Images
+
+```bash
+# Create synthetic test images
+python create_test_images.py test_images/
+
+# Create from MNIST dataset
+python create_test_images.py test_images/ --mnist
+
+# Create all types
+python create_test_images.py test_images/ --all
+```
+
 ## 📝 Development Roadmap
 
 - [x] Milestone 1: Project setup
-- [x] Milestone 2: Data pipeline (Complete! ✨)
-- [ ] Milestone 3: Model training
-- [ ] Milestone 4: CLI interface
+- [x] Milestone 2: Data pipeline
+- [x] Milestone 3: Model training (CNN with >98% accuracy)
+- [x] Milestone 4: CLI interface
 - [ ] Milestone 5: Web interface
 - [ ] Milestone 6: Visualizations
 
-### Current Features (Milestone 2)
+### Current Features
 
-- **Data Loading**: Automatic MNIST dataset download and caching
-- **Preprocessing**: Normalization, reshaping, one-hot encoding
-- **Data Pipeline**: Integrated pipeline with caching for efficiency
-- **Data Exploration**: Jupyter notebook with visualizations
-- **Validation Split**: Automatic train/validation splitting
-- **Batch Generator**: Memory-efficient data loading for training
+- **CNN Model**: Two convolutional layers achieving >98% accuracy
+- **GPU Support**: Optimized training with CUDA acceleration
+- **CLI Tools**: Command-line interface for predictions
+- **Batch Processing**: Process multiple images efficiently
+- **Multiple Output Formats**: Human-readable, JSON, CSV
+- **Image Preprocessing**: Automatic normalization and inversion detection
+- **Test Image Generation**: Create synthetic and MNIST-based test images
 
 ## 🤝 Contributing
 
