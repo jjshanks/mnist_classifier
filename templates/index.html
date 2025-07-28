@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Draw a Digit</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>MNIST Digit Classifier</h1>
+            <p class="subtitle">Draw a digit (0-9) and let AI recognize it!</p>
+        </header>
+
+        <!-- Main Content -->
+        <main>
+            <div class="app-grid">
+                <!-- Drawing Area -->
+                <div class="drawing-section">
+                    <div class="canvas-container">
+                        <canvas id="drawingCanvas" width="280" height="280"></canvas>
+                        <div class="canvas-label">Draw here</div>
+                    </div>
+
+                    <div class="controls">
+                        <button id="predictBtn" class="btn btn-primary">
+                            <span class="btn-icon">🔮</span>
+                            Predict
+                        </button>
+                        <button id="clearBtn" class="btn btn-secondary">
+                            <span class="btn-icon">🗑️</span>
+                            Clear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Area -->
+                <div class="results-section">
+                    <div id="resultContainer" class="result-container">
+                        <div class="placeholder">
+                            <div class="placeholder-icon">✏️</div>
+                            <p>Draw a digit and click "Predict"</p>
+                        </div>
+                    </div>
+
+                    <div id="probabilityChart" class="probability-chart" style="display: none;">
+                        <h3>Confidence Levels</h3>
+                        <div class="chart-container">
+                            <!-- Probability bars will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Info -->
+            <div class="info-section">
+                <div class="info-card">
+                    <h3>How it works</h3>
+                    <ol>
+                        <li>Draw a single digit (0-9) in the canvas</li>
+                        <li>Click "Predict" to analyze your drawing</li>
+                        <li>The AI will recognize the digit with confidence scores</li>
+                        <li>Click "Clear" to try another digit</li>
+                    </ol>
+                </div>
+
+                <div class="info-card">
+                    <h3>Tips for best results</h3>
+                    <ul>
+                        <li>Draw the digit large and centered</li>
+                        <li>Use smooth, continuous strokes</li>
+                        <li>Make the digit fill most of the canvas</li>
+                        <li>Avoid very thin or very thick lines</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h3>About the model</h3>
+                    <p>This classifier uses a Convolutional Neural Network (CNN) trained on the MNIST dataset with over 98% accuracy.</p>
+                    <p><a href="/docs" target="_blank">View API Documentation →</a></p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>Built with TensorFlow, FastAPI, and ❤️</p>
+            <p class="footer-links">
+                <a href="https://github.com/yourusername/mnist-classifier" target="_blank">GitHub</a>
+                <span class="separator">•</span>
+                <a href="/docs" target="_blank">API Docs</a>
+                <span class="separator">•</span>
+                <a href="/health" target="_blank">Status</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Analyzing your digit...</p>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Oops!</h2>
+            <p id="errorMessage">Something went wrong. Please try again.</p>
+            <button class="btn btn-primary" onclick="closeErrorModal()">OK</button>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+</body>
+</html>
