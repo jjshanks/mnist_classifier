@@ -39,9 +39,18 @@ tensorboard_logs/
 
 # Testing and temporary files
 .pytest_cache/
+.mypy_cache/
 .coverage
 htmlcov/
 *.tmp
+
+# Development cruft
+test_*.py
+verify_*.py
+diagnose_*.py
+benchmark_*.py
+*_test_*
+debug_*
 
 # Distribution / packaging
 build/
