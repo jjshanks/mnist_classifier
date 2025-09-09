@@ -18,7 +18,7 @@
             <!-- Drawing Section -->
             <div class="drawing-section">
                 <h2>Draw a Digit (0-9)</h2>
-                <canvas id="canvas" width="280" height="280"></canvas>
+                <canvas id="canvas" width="280" height="400"></canvas>
                 <div class="controls">
                     <button id="predict-btn" class="btn btn-primary">Predict</button>
                     <button id="clear-btn" class="btn btn-secondary">Clear</button>
@@ -27,17 +27,10 @@
 
             <!-- Results Section -->
             <div class="results-section">
-                <div id="prediction-result" class="hidden">
-                    <h2>Prediction</h2>
-                    <div class="prediction-display">
-                        <span class="predicted-digit" id="predicted-digit">?</span>
-                        <span class="confidence" id="confidence">0%</span>
-                    </div>
-                </div>
-
+                <h2>Prediction</h2>
+                
                 <!-- Probability Chart -->
                 <div id="probability-section" class="hidden">
-                    <h3>Prediction Probabilities</h3>
                     <img id="prob-chart" class="visualization-img" />
                     <p class="explanation">
                         This chart shows how confident the model is about each digit.
@@ -53,9 +46,9 @@
 
             <div class="viz-tabs">
                 <button class="viz-tab active" data-layer="overview">Overview</button>
-                <button class="viz-tab" data-layer="conv1">Layer 1</button>
-                <button class="viz-tab" data-layer="conv2">Layer 2</button>
-                <button class="viz-tab" data-layer="conv3">Layer 3</button>
+                <button class="viz-tab" data-layer="conv1">Conv Layer 1</button>
+                <button class="viz-tab" data-layer="conv2">Conv Layer 2</button>
+                <button class="viz-tab" data-layer="conv3">Conv Layer 3</button>
             </div>
 
             <div class="viz-content">
@@ -73,46 +66,49 @@
 
                 <!-- Conv1 Tab -->
                 <div id="conv1-tab" class="viz-panel">
-                    <h3>Layer 1: Edge Detection</h3>
+                    <h3>First Convolutional Layer</h3>
                     <img id="conv1-plot" class="visualization-img" />
                     <div class="layer-info">
-                        <p><strong>Purpose:</strong> Detects basic edges and strokes</p>
                         <p><strong>Filters:</strong> <span id="conv1-filters">32</span></p>
                         <p><strong>Output size:</strong> <span id="conv1-shape">28×28</span></p>
+                        <p><strong>Filter size:</strong> 3×3</p>
                     </div>
                     <p class="explanation">
-                        The first convolutional layer learns to detect simple patterns like edges,
-                        corners, and basic strokes. Each square shows what one filter "sees" in your drawing.
+                        The first convolutional layer contains 32 learned filters. Each square shows the 
+                        activation pattern for one filter when processing your drawing. Brighter areas 
+                        indicate stronger responses.
                     </p>
                 </div>
 
                 <!-- Conv2 Tab -->
                 <div id="conv2-tab" class="viz-panel">
-                    <h3>Layer 2: Shape Detection</h3>
+                    <h3>Second Convolutional Layer</h3>
                     <img id="conv2-plot" class="visualization-img" />
                     <div class="layer-info">
-                        <p><strong>Purpose:</strong> Combines edges into shapes</p>
                         <p><strong>Filters:</strong> <span id="conv2-filters">64</span></p>
                         <p><strong>Output size:</strong> <span id="conv2-shape">14×14</span></p>
+                        <p><strong>Filter size:</strong> 3×3</p>
                     </div>
                     <p class="explanation">
-                        The second layer combines simple patterns from Layer 1 to detect more complex
-                        shapes like curves, loops, and intersections that are common in digits.
+                        The second convolutional layer contains 64 learned filters. Each filter processes 
+                        the outputs from the first layer. This layer operates on a smaller spatial resolution 
+                        due to pooling in the previous layer.
                     </p>
                 </div>
 
                 <!-- Conv3 Tab -->
                 <div id="conv3-tab" class="viz-panel">
-                    <h3>Layer 3: Digit Features</h3>
+                    <h3>Third Convolutional Layer</h3>
                     <img id="conv3-plot" class="visualization-img" />
                     <div class="layer-info">
-                        <p><strong>Purpose:</strong> Recognizes digit-specific patterns</p>
                         <p><strong>Filters:</strong> <span id="conv3-filters">128</span></p>
                         <p><strong>Output size:</strong> <span id="conv3-shape">7×7</span></p>
+                        <p><strong>Filter size:</strong> 3×3</p>
                     </div>
                     <p class="explanation">
-                        The third layer has learned to recognize features specific to each digit,
-                        like the closed loop of 0, the vertical line of 1, or the curves of 3.
+                        The third convolutional layer contains 128 learned filters. This layer processes 
+                        information from the previous layers and operates on an even smaller spatial 
+                        resolution. The patterns shown represent the learned filter activations.
                     </p>
                 </div>
             </div>
@@ -181,19 +177,19 @@
             <div class="help-section">
                 <h3>Understanding the Layers</h3>
                 <div class="layer-explanation">
-                    <h4>🔵 Layer 1: Edge Detection</h4>
-                    <p>The first layer learns to detect simple features like edges and strokes.
-                       Think of it as breaking down your drawing into basic lines and curves.</p>
+                    <h4>🔵 First Convolutional Layer</h4>
+                    <p>Contains 32 learned filters (3×3 size) that process the input image directly.
+                       Each filter has learned to respond to different patterns during training.</p>
                 </div>
                 <div class="layer-explanation">
-                    <h4>🟢 Layer 2: Shape Recognition</h4>
-                    <p>The second layer combines edges to recognize shapes. It might detect
-                       "loops" for 0, 6, 8, 9 or "vertical lines" for 1, 4, 7.</p>
+                    <h4>🟢 Second Convolutional Layer</h4>
+                    <p>Contains 64 learned filters that process the outputs from the first layer.
+                       Operations on reduced spatial dimensions (14×14) due to pooling.</p>
                 </div>
                 <div class="layer-explanation">
-                    <h4>🟠 Layer 3: Digit Features</h4>
-                    <p>The third layer recognizes complete digit patterns. Each filter has
-                       specialized in detecting specific digits or digit combinations.</p>
+                    <h4>🟠 Third Convolutional Layer</h4>
+                    <p>Contains 128 learned filters operating on 7×7 spatial dimensions.
+                       The final convolutional layer before the dense classification layers.</p>
                 </div>
             </div>
 

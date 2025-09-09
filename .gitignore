@@ -58,3 +58,4 @@ dist/
 *.egg-info/
 
 models/experiments/*
+models/mnist_cnn_model

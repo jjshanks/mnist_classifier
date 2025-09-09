@@ -29,24 +29,24 @@ def create_activation_plot(
 
     fig = plt.figure(figsize=figsize)
 
-    # Create custom layout
-    gs = fig.add_gridspec(5, 4, hspace=0.3, wspace=0.2)
+    # Create custom layout with more space for the bottom text
+    gs = fig.add_gridspec(6, 4, hspace=0.4, wspace=0.2)
 
     # Layer-specific titles and descriptions
     layer_info = {
         "conv1": {
-            "title": "Layer 1: Edge and Stroke Detection",
-            "description": "This layer detects basic features like edges, curves, and strokes",
+            "title": "First Convolutional Layer (32 filters)",
+            "description": "Filter activations from the first convolutional layer processing the input image",
             "cmap": "RdBu_r",
         },
         "conv2": {
-            "title": "Layer 2: Shape and Pattern Recognition",
-            "description": "This layer combines edges to recognize shapes and patterns",
+            "title": "Second Convolutional Layer (64 filters)",
+            "description": "Filter activations from the second convolutional layer",
             "cmap": "viridis",
         },
         "conv3": {
-            "title": "Layer 3: Digit-Specific Features",
-            "description": "This layer recognizes features specific to individual digits",
+            "title": "Third Convolutional Layer (128 filters)",
+            "description": "Filter activations from the third convolutional layer",
             "cmap": "plasma",
         },
     }
@@ -128,46 +128,9 @@ def create_activation_plot(
                 spine.set_edgecolor(border_color)
                 spine.set_linewidth(border_width)
 
-            # Title with interpretation
-            feature_descriptions = {
-                "conv1": [
-                    "vertical edge",
-                    "horizontal edge",
-                    "diagonal edge",
-                    "curve",
-                    "corner",
-                    "dot",
-                    "line segment",
-                    "stroke",
-                ],
-                "conv2": [
-                    "loop",
-                    "intersection",
-                    "parallel lines",
-                    "curve pattern",
-                    "angle",
-                    "rounded shape",
-                    "straight pattern",
-                    "complex edge",
-                ],
-                "conv3": [
-                    "digit shape",
-                    "specific curve",
-                    "digit feature",
-                    "pattern",
-                    "characteristic",
-                    "unique shape",
-                    "digit part",
-                    "recognition",
-                ],
-            }
-
-            # Get a description based on filter index
-            descriptions = feature_descriptions.get(layer_name, ["feature"])
-            feature_desc = descriptions[i % len(descriptions)]
-
+            # Simple title with just filter number
             ax.set_title(
-                f"Filter {filter_idx}: {feature_desc}\n({strength_label})",
+                f"Filter {filter_idx}\n({strength_label})",
                 fontsize=9,
                 pad=2,
             )
@@ -192,29 +155,28 @@ def create_activation_plot(
             ax = fig.add_subplot(gs[row, col])
             ax.axis("off")
 
-    # Add interpretation guide at bottom
-    ax_guide = fig.add_subplot(gs[4, :])
+    # Add interpretation guide at bottom with proper spacing
+    ax_guide = fig.add_subplot(gs[5, :])
     ax_guide.axis("off")
 
     guide_text = """Reading the visualization:
-    • Brighter areas = stronger activation (the network "sees" something important there)
-    • Red borders = filters most active for this input (key features for recognition)
-    • Each filter has learned to detect a specific type of feature
-    """
+• Brighter areas = stronger activation (the network "sees" something important there)
+• Red borders = filters most active for this input (key features for recognition)
+• Each filter has learned to detect a specific type of feature"""
 
     if layer_name == "conv1":
-        guide_text += "• Layer 1 looks for basic building blocks like edges and curves"
+        guide_text += "\n• First convolutional layer: 32 filters with 3×3 kernels processing the input image"
     elif layer_name == "conv2":
-        guide_text += "• Layer 2 combines simple features into more complex patterns"
+        guide_text += "\n• Second convolutional layer: 64 filters processing outputs from the first layer"
     elif layer_name == "conv3":
-        guide_text += f"• Layer 3 has learned features specific to recognizing '{predicted_digit}'"
+        guide_text += "\n• Third convolutional layer: 128 filters in the final convolutional stage"
 
     ax_guide.text(
         0.5,
-        0.5,
+        0.8,
         guide_text,
         ha="center",
-        va="center",
+        va="top",
         fontsize=10,
         bbox=dict(boxstyle="round,pad=0.5", facecolor="lightyellow", alpha=0.5),
     )
@@ -352,13 +314,13 @@ def create_layer_summary_plot(activations: dict[str, any]) -> str:
     # Create figure with custom layout
     fig = plt.figure(figsize=(16, 10))
 
-    # Create grid for subplots
-    gs = fig.add_gridspec(3, 4, hspace=0.4, wspace=0.3)
+    # Create grid for subplots with better proportions
+    gs = fig.add_gridspec(3, 4, hspace=0.5, wspace=0.4, left=0.08, right=0.95, top=0.9, bottom=0.15)
 
     # Title with prediction
     fig.suptitle(
         f'How the Network Recognized "{predicted_digit}" (Confidence: {confidence:.1%})',
-        fontsize=16,
+        fontsize=18,
         fontweight="bold",
     )
 
@@ -389,9 +351,9 @@ def create_layer_summary_plot(activations: dict[str, any]) -> str:
 
         # Draw box
         box = plt.Rectangle(
-            (x_pos - 0.08, y_pos - 0.3),
-            0.16,
-            0.6,
+            (x_pos - 0.07, y_pos - 0.25),
+            0.14,
+            0.5,
             facecolor=color,
             edgecolor="black",
             linewidth=2,
@@ -406,17 +368,18 @@ def create_layer_summary_plot(activations: dict[str, any]) -> str:
             ha="center",
             va="center",
             fontweight="bold" if i == len(stages) - 1 else "normal",
+            fontsize=11,
         )
 
         # Draw arrow
         if i < len(stages) - 1:
             ax1.arrow(
-                x_pos + 0.08,
+                x_pos + 0.07,
                 y_pos,
-                0.15,
+                0.16,
                 0,
-                head_width=0.1,
-                head_length=0.05,
+                head_width=0.08,
+                head_length=0.04,
                 fc="black",
                 ec="black",
             )
@@ -447,110 +410,19 @@ def create_layer_summary_plot(activations: dict[str, any]) -> str:
 
                 bars = ax.bar(range(len(top_values)), top_values, color=colors)
                 ax.set_title(
-                    f'{layer_name.upper()}: Top {top_n} Active Filters\n(of {layer_data["num_filters"]} total)'
+                    f'{layer_name.upper()}: Top {top_n} Active Filters\n(of {layer_data["num_filters"]} total)',
+                    fontsize=12,
+                    pad=15
                 )
-                ax.set_xlabel("Most Active Filters")
-                ax.set_ylabel("Activation Strength")
+                ax.set_xlabel("Most Active Filters", fontsize=11)
+                ax.set_ylabel("Activation Strength", fontsize=11)
                 ax.set_ylim(bottom=0)
 
-                # Add meaningful labels instead of filter indices
-                # Create feature descriptions based on layer and activation patterns
-                if layer_name == "conv1":
-                    # Layer 1: Basic edge and stroke detectors
-                    feature_names = [
-                        "vertical edges",
-                        "horizontal edges",
-                        "diagonal (/) edges",
-                        "diagonal (\\) edges",
-                        "curved strokes",
-                        "corners",
-                        "dots/endpoints",
-                        "line segments",
-                        "thick strokes",
-                        "thin strokes",
-                    ]
-                elif layer_name == "conv2":
-                    # Layer 2: Shape and pattern detectors
-                    feature_names = [
-                        "loops/circles",
-                        "intersections",
-                        "parallel lines",
-                        "curves",
-                        "right angles",
-                        "acute angles",
-                        "S-curves",
-                        "straight segments",
-                        "crossings",
-                        "junctions",
-                    ]
-                elif layer_name == "conv3":
-                    # Layer 3: Digit-specific feature detectors
-                    # These would be more specific to the predicted digit
-                    digit_features = {
-                        0: [
-                            "closed loop",
-                            "oval shape",
-                            "vertical symmetry",
-                            "no gaps",
-                        ],
-                        1: ["vertical line", "minimal width", "straight", "no loops"],
-                        2: [
-                            "top curve",
-                            "diagonal middle",
-                            "horizontal base",
-                            "S-shape",
-                        ],
-                        3: [
-                            "two curves",
-                            "right-facing",
-                            "no left edge",
-                            "middle indent",
-                        ],
-                        4: [
-                            "vertical right",
-                            "horizontal cross",
-                            "open left",
-                            "angular",
-                        ],
-                        5: [
-                            "top horizontal",
-                            "curved bottom",
-                            "right hook",
-                            "flat top",
-                        ],
-                        6: ["large loop", "top curve", "enclosed space", "curved hook"],
-                        7: [
-                            "diagonal line",
-                            "horizontal top",
-                            "angled down",
-                            "no loops",
-                        ],
-                        8: ["two loops", "figure-8", "center cross", "symmetrical"],
-                        9: ["top loop", "vertical right", "small circle", "descender"],
-                    }
-                    # Get features for the predicted digit
-                    digit_specific = digit_features.get(
-                        predicted_digit, ["digit feature"] * 4
-                    )
-                    # Mix with general high-level features
-                    feature_names = digit_specific + [
-                        "high contrast",
-                        "key region",
-                        "critical edge",
-                        "unique pattern",
-                        "distinctive shape",
-                        "identifying mark",
-                    ]
-                else:
-                    feature_names = [f"feature {i+1}" for i in range(10)]
-
-                # Assign labels cyclically if we have more filters than descriptions
-                labels = []
-                for i in range(len(top_values)):
-                    labels.append(feature_names[i % len(feature_names)])
-
+                # Use simple filter numbers instead of fake feature names
+                filter_labels = [f"F{top_indices[i]}" for i in range(len(top_values))]
+                
                 ax.set_xticks(range(len(top_values)))
-                ax.set_xticklabels(labels, rotation=45, ha="right")
+                ax.set_xticklabels(filter_labels, rotation=45, ha="right", fontsize=10)
 
     # Dense layer - show connection to digits
     ax_dense = fig.add_subplot(gs[1, 3])
@@ -566,33 +438,21 @@ def create_layer_summary_plot(activations: dict[str, any]) -> str:
         colors = plt.cm.Reds(top_values / top_values.max())
         bars = ax_dense.bar(range(len(top_values)), top_values, color=colors)
         ax_dense.set_title(
-            f"Dense Layer: Top {top_n} Active Neurons\n(of {len(dense_acts)} total)"
+            f"Dense Layer: Top {top_n} Active Neurons\n(of {len(dense_acts)} total)",
+            fontsize=12,
+            pad=15
         )
-        ax_dense.set_xlabel("Decision Neurons")
-        ax_dense.set_ylabel("Activation")
+        ax_dense.set_xlabel("Decision Neurons", fontsize=11)
+        ax_dense.set_ylabel("Activation", fontsize=11)
 
-        # Add meaningful labels for dense layer neurons
-        # These represent high-level decision-making neurons
-        neuron_labels = [
-            f"digit {predicted_digit} detector",
-            f"{predicted_digit}-like patterns",
-            "confidence builder",
-            "ambiguity resolver",
-            "feature combiner",
-            "pattern matcher",
-            "decision maker",
-            "similarity checker",
-            "final classifier",
-            "certainty neuron",
-        ]
+        # Use simple neuron numbers instead of fake labels
+        neuron_labels = [f"N{top_indices[i]}" for i in range(len(top_values))]
 
         ax_dense.set_xticks(range(len(top_values)))
-        ax_dense.set_xticklabels(
-            neuron_labels[: len(top_values)], rotation=45, ha="right"
-        )
+        ax_dense.set_xticklabels(neuron_labels, rotation=45, ha="right", fontsize=10)
 
-    # 3. Final Decision (bottom row)
-    ax_decision = fig.add_subplot(gs[2, :2])
+    # 3. Final Decision (bottom row - centered)
+    ax_decision = fig.add_subplot(gs[2, 1:3])
 
     # Show how activations lead to final probabilities
     probs = activations["predictions"]["probabilities"]
@@ -619,7 +479,7 @@ def create_layer_summary_plot(activations: dict[str, any]) -> str:
                 f"{prob:.1%}",
                 ha="center",
                 va="bottom",
-                fontsize=10,
+                fontsize=11,
                 fontweight="bold" if digit == predicted_digit else "normal",
             )
 
@@ -630,7 +490,7 @@ def create_layer_summary_plot(activations: dict[str, any]) -> str:
     ax_decision.set_xticks(digits)
     ax_decision.grid(axis="y", alpha=0.3)
 
-    # Add legend
+    # Add legend outside the plot area to avoid any overlap
     from matplotlib.patches import Patch
 
     legend_elements = [
@@ -638,36 +498,9 @@ def create_layer_summary_plot(activations: dict[str, any]) -> str:
         Patch(facecolor="orange", label="Alternative (>10%)"),
         Patch(facecolor="lightgray", label="Unlikely (<10%)"),
     ]
-    ax_decision.legend(handles=legend_elements, loc="upper right")
+    ax_decision.legend(handles=legend_elements, bbox_to_anchor=(1.05, 1), loc="upper left",
+                      fontsize=10, frameon=True, fancybox=True, shadow=True)
 
-    # 4. Explanation text
-    ax_explain = fig.add_subplot(gs[2, 2:])
-    ax_explain.axis("off")
-
-    # Create explanation based on the prediction
-    explanation = f"""Why the network thinks this is a "{predicted_digit}":
-
-• The early layers detected edges and strokes typical of "{predicted_digit}"
-• Middle layers recognized shape patterns associated with "{predicted_digit}"
-• The final layers combined these features with {confidence:.1%} confidence
-
-The network considered alternatives:"""
-
-    # Add top alternatives
-    sorted_probs = sorted(enumerate(probs), key=lambda x: x[1], reverse=True)
-    for i, (digit, prob) in enumerate(sorted_probs[1:4]):  # Top 3 alternatives
-        if prob > 0.01:
-            explanation += f"\n• Digit {digit}: {prob:.1%} probability"
-
-    ax_explain.text(
-        0.05,
-        0.95,
-        explanation,
-        transform=ax_explain.transAxes,
-        fontsize=11,
-        verticalalignment="top",
-        bbox=dict(boxstyle="round,pad=0.5", facecolor="lightyellow", alpha=0.8),
-    )
 
     plt.tight_layout()
 

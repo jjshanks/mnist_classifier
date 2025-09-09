@@ -32,31 +32,48 @@ class NeuralNetworkVisualizer {
     updateVisualizations(data) {
         // Show visualization section
         const vizSection = document.getElementById('visualization-section');
-        vizSection.classList.remove('hidden');
-
-        // Update prediction display
-        document.getElementById('predicted-digit').textContent = data.prediction;
-        document.getElementById('confidence').textContent = `${(data.confidence * 100).toFixed(1)}%`;
-        document.getElementById('prediction-result').classList.remove('hidden');
+        if (vizSection) {
+            vizSection.classList.remove('hidden');
+        }
 
         // Update probability chart
-        if (data.visualizations.probability_chart) {
-            document.getElementById('prob-chart').src = `data:image/png;base64,${data.visualizations.probability_chart}`;
-            document.getElementById('probability-section').classList.remove('hidden');
+        if (data.visualizations && data.visualizations.probability_chart) {
+            const probChart = document.getElementById('prob-chart');
+            const probSection = document.getElementById('probability-section');
+            if (probChart) {
+                probChart.src = `data:image/png;base64,${data.visualizations.probability_chart}`;
+            }
+            if (probSection) {
+                probSection.classList.remove('hidden');
+            }
         }
 
         // Update layer visualizations
-        if (data.visualizations.conv1) {
-            document.getElementById('conv1-plot').src = `data:image/png;base64,${data.visualizations.conv1}`;
-        }
-        if (data.visualizations.conv2) {
-            document.getElementById('conv2-plot').src = `data:image/png;base64,${data.visualizations.conv2}`;
-        }
-        if (data.visualizations.conv3) {
-            document.getElementById('conv3-plot').src = `data:image/png;base64,${data.visualizations.conv3}`;
-        }
-        if (data.visualizations.summary) {
-            document.getElementById('summary-plot').src = `data:image/png;base64,${data.visualizations.summary}`;
+        if (data.visualizations) {
+            if (data.visualizations.conv1) {
+                const conv1Plot = document.getElementById('conv1-plot');
+                if (conv1Plot) {
+                    conv1Plot.src = `data:image/png;base64,${data.visualizations.conv1}`;
+                }
+            }
+            if (data.visualizations.conv2) {
+                const conv2Plot = document.getElementById('conv2-plot');
+                if (conv2Plot) {
+                    conv2Plot.src = `data:image/png;base64,${data.visualizations.conv2}`;
+                }
+            }
+            if (data.visualizations.conv3) {
+                const conv3Plot = document.getElementById('conv3-plot');
+                if (conv3Plot) {
+                    conv3Plot.src = `data:image/png;base64,${data.visualizations.conv3}`;
+                }
+            }
+            if (data.visualizations.summary) {
+                const summaryPlot = document.getElementById('summary-plot');
+                if (summaryPlot) {
+                    summaryPlot.src = `data:image/png;base64,${data.visualizations.summary}`;
+                }
+            }
         }
 
         // Update layer info
@@ -65,43 +82,65 @@ class NeuralNetworkVisualizer {
         }
 
         // Scroll to visualizations
-        vizSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        if (vizSection) {
+            vizSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     }
 
     updateLayerInfo(layerInfo) {
         // Update conv1 info
         if (layerInfo.conv1) {
-            document.getElementById('conv1-filters').textContent = layerInfo.conv1.num_filters || '32';
+            const conv1FiltersEl = document.getElementById('conv1-filters');
+            if (conv1FiltersEl) {
+                conv1FiltersEl.textContent = layerInfo.conv1.num_filters || '32';
+            }
             if (layerInfo.conv1.shape) {
-                document.getElementById('conv1-shape').textContent =
-                    `${layerInfo.conv1.shape[0]}×${layerInfo.conv1.shape[1]}`;
+                const conv1ShapeEl = document.getElementById('conv1-shape');
+                if (conv1ShapeEl) {
+                    conv1ShapeEl.textContent = `${layerInfo.conv1.shape[0]}×${layerInfo.conv1.shape[1]}`;
+                }
             }
         }
 
         // Update conv2 info
         if (layerInfo.conv2) {
-            document.getElementById('conv2-filters').textContent = layerInfo.conv2.num_filters || '64';
+            const conv2FiltersEl = document.getElementById('conv2-filters');
+            if (conv2FiltersEl) {
+                conv2FiltersEl.textContent = layerInfo.conv2.num_filters || '64';
+            }
             if (layerInfo.conv2.shape) {
-                document.getElementById('conv2-shape').textContent =
-                    `${layerInfo.conv2.shape[0]}×${layerInfo.conv2.shape[1]}`;
+                const conv2ShapeEl = document.getElementById('conv2-shape');
+                if (conv2ShapeEl) {
+                    conv2ShapeEl.textContent = `${layerInfo.conv2.shape[0]}×${layerInfo.conv2.shape[1]}`;
+                }
             }
         }
 
         // Update conv3 info
         if (layerInfo.conv3) {
-            document.getElementById('conv3-filters').textContent = layerInfo.conv3.num_filters || '128';
+            const conv3FiltersEl = document.getElementById('conv3-filters');
+            if (conv3FiltersEl) {
+                conv3FiltersEl.textContent = layerInfo.conv3.num_filters || '128';
+            }
             if (layerInfo.conv3.shape) {
-                document.getElementById('conv3-shape').textContent =
-                    `${layerInfo.conv3.shape[0]}×${layerInfo.conv3.shape[1]}`;
+                const conv3ShapeEl = document.getElementById('conv3-shape');
+                if (conv3ShapeEl) {
+                    conv3ShapeEl.textContent = `${layerInfo.conv3.shape[0]}×${layerInfo.conv3.shape[1]}`;
+                }
             }
         }
     }
 
     showError(message) {
         // Hide visualization section on error
-        document.getElementById('visualization-section').classList.add('hidden');
-        document.getElementById('prediction-result').classList.add('hidden');
-        document.getElementById('probability-section').classList.add('hidden');
+        const vizSection = document.getElementById('visualization-section');
+        const probSection = document.getElementById('probability-section');
+        if (vizSection) {
+            vizSection.classList.add('hidden');
+        }
+        if (probSection) {
+            probSection.classList.add('hidden');
+        }
     }
 }
 

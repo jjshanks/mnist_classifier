@@ -38,8 +38,8 @@ if [[ $(uname -r) == *"microsoft"* ]]; then
     LD_LIBRARY_PATH="$LD_PATHS:$LD_LIBRARY_PATH" \
     TF_CPP_MIN_LOG_LEVEL=2 \
     TF_ENABLE_ONEDNN_OPTS=0 \
-    exec uv run python train_model.py "$@"
+    exec uv run python src/mnist_classifier/training/train.py "$@"
 else
     # Not WSL2, just run normally
-    exec uv run python train_model.py "$@"
+    exec uv run python src/mnist_classifier/training/train.py "$@"
 fi

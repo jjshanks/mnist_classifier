@@ -150,7 +150,6 @@ function clearCanvas() {
  * Clear prediction results
  */
 function clearResults() {
-    document.getElementById('prediction-result').classList.add('hidden');
     document.getElementById('probability-section').classList.add('hidden');
     document.getElementById('visualization-section').classList.add('hidden');
 }
