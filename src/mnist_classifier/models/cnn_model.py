@@ -7,6 +7,7 @@ recognizing handwritten digits from the MNIST dataset.
 
 import json
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from tensorflow import keras
@@ -305,6 +306,160 @@ def create_model_visualization(
     except Exception as e:
         print(f"Could not create visualization: {e}")
         print("Install graphviz for model plotting: pip install pydot graphviz")
+
+
+def create_visualization_model(base_model: keras.Model) -> keras.Model:
+    """
+    Create a model that outputs intermediate layer activations.
+
+    This model has the same input as the base model but outputs
+    activations from multiple layers for visualization.
+
+    Args:
+        base_model: Trained CNN model
+
+    Returns:
+        Model with multiple outputs for visualization
+    """
+    # Get the layers we want to visualize
+    layer_names = ["conv1", "conv2", "conv3", "dense1"]
+
+    # Extract the outputs of these layers
+    layer_outputs = []
+    for name in layer_names:
+        try:
+            layer = base_model.get_layer(name)
+            layer_outputs.append(layer.output)
+        except ValueError:
+            print(f"Warning: Layer '{name}' not found in model")
+
+    # Also include the final predictions
+    layer_outputs.append(base_model.output)
+
+    # Create a model with multiple outputs
+    visualization_model = keras.Model(
+        inputs=base_model.input, outputs=layer_outputs, name="visualization_model"
+    )
+
+    return visualization_model
+
+
+def get_activation_model(model_path: str) -> tuple[keras.Model, keras.Model]:
+    """
+    Load a model and create its visualization version.
+
+    Args:
+        model_path: Path to saved model
+
+    Returns:
+        Tuple of (original_model, visualization_model)
+    """
+    # Load the trained model
+    original_model = keras.models.load_model(model_path)
+
+    # Create visualization model
+    viz_model = create_visualization_model(original_model)
+
+    return original_model, viz_model
+
+
+def process_activations(activations: list[np.ndarray]) -> dict[str, Any]:
+    """
+    Process raw activations into a format suitable for visualization.
+
+    Args:
+        activations: List of activation arrays from different layers
+
+    Returns:
+        Dictionary with processed activations
+    """
+    processed = {}
+
+    # Process convolutional layers
+    conv_names = ["conv1", "conv2", "conv3"]
+    for i, name in enumerate(conv_names):
+        if i < len(activations) - 2:  # -2 for dense and predictions
+            activation = activations[i][0]  # Remove batch dimension
+
+            # For conv layers, we'll select the most active filters
+            # Calculate the mean activation for each filter
+            mean_activations = np.mean(activation, axis=(0, 1))
+
+            # Get indices of top 16 most active filters
+            top_indices = np.argsort(mean_activations)[-16:][::-1]
+
+            # Extract top filters
+            top_filters = activation[:, :, top_indices]
+
+            processed[name] = {
+                "shape": activation.shape,
+                "num_filters": activation.shape[-1],
+                "top_filters": top_filters,
+                "top_indices": top_indices.tolist(),
+                "mean_activations": mean_activations.tolist(),
+            }
+
+    # Process dense layer
+    if len(activations) > 3:
+        dense_activation = activations[-2][0]  # -2 is dense, -1 is predictions
+        processed["dense"] = {
+            "activations": dense_activation.tolist(),
+            "shape": dense_activation.shape,
+        }
+
+    # Process final predictions
+    predictions = activations[-1][0]
+    processed["predictions"] = {
+        "probabilities": predictions.tolist(),
+        "predicted_class": int(np.argmax(predictions)),
+        "confidence": float(np.max(predictions)),
+    }
+
+    return processed
+
+
+def create_feature_map_grid(feature_maps: np.ndarray, max_maps: int = 16) -> np.ndarray:
+    """
+    Create a grid visualization of feature maps.
+
+    Args:
+        feature_maps: Array of shape (height, width, num_filters)
+        max_maps: Maximum number of feature maps to include
+
+    Returns:
+        Single image containing grid of feature maps
+    """
+    n_maps = min(feature_maps.shape[-1], max_maps)
+    grid_size = int(np.ceil(np.sqrt(n_maps)))
+
+    # Create empty grid
+    map_height, map_width = feature_maps.shape[:2]
+    grid_height = grid_size * map_height + (grid_size - 1) * 2  # 2 pixel padding
+    grid_width = grid_size * map_width + (grid_size - 1) * 2
+
+    grid = np.zeros((grid_height, grid_width))
+
+    # Fill grid with feature maps
+    for i in range(n_maps):
+        row = i // grid_size
+        col = i % grid_size
+
+        # Calculate position in grid
+        y_start = row * (map_height + 2)
+        y_end = y_start + map_height
+        x_start = col * (map_width + 2)
+        x_end = x_start + map_width
+
+        # Normalize feature map to [0, 1]
+        feature_map = feature_maps[:, :, i]
+        if feature_map.max() > feature_map.min():
+            feature_map = (feature_map - feature_map.min()) / (
+                feature_map.max() - feature_map.min()
+            )
+
+        grid[y_start:y_end, x_start:x_end] = feature_map
+
+    return grid
 
 
 if __name__ == "__main__":

@@ -17,7 +17,6 @@ from fastapi import (  # type: ignore[import-not-found]
     FastAPI,
     HTTPException,
     Request,
-    status,
 )
 from fastapi.middleware.cors import CORSMiddleware  # type: ignore[import-not-found]
 from fastapi.responses import (  # type: ignore[import-not-found]
@@ -37,9 +36,19 @@ sys.path.insert(0, str(project_root))
 from src.mnist_classifier.cli.predict import (  # noqa: E402
     load_model as load_model_from_file,
 )
+from src.mnist_classifier.models.cnn_model import (  # noqa: E402
+    create_visualization_model,
+    get_activation_model,
+    process_activations,
+)
 from src.mnist_classifier.preprocess import (  # noqa: E402
     normalize_pixels,
     reshape_images,
+)
+from src.mnist_classifier.visualization.activation_viz import (  # noqa: E402
+    create_activation_plot,
+    create_layer_summary_plot,
+    create_probability_chart,
 )
 
 # Create FastAPI app
@@ -75,8 +84,9 @@ templates = Jinja2Templates(directory=str(templates_dir))
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 
-# Global model instance
+# Global model instances
 model_instance = None
+viz_model_instance = None
 
 
 class PredictionRequest(BaseModel):
@@ -150,6 +160,51 @@ def load_model() -> keras.Model:
     return model_instance
 
 
+def load_models() -> tuple[keras.Model, keras.Model]:
+    """Load both the regular model and visualization model."""
+    global model_instance, viz_model_instance  # noqa: PLW0603
+
+    if model_instance is None or viz_model_instance is None:
+        print("Loading models...")
+        # Find latest model - look for complete model files, not weights
+        model_paths = [
+            Path("models/experiments"),
+            Path("models"),
+        ]
+
+        h5_files = []
+        for base_path in model_paths:
+            if base_path.exists():
+                # Look for final_model.h5 or best_model.h5 files
+                h5_files.extend(base_path.glob("**/final_model.h5"))
+                h5_files.extend(base_path.glob("**/best_model.h5"))
+                # Also check in models directory
+                h5_files.extend(base_path.glob("mnist_model.h5"))
+                h5_files.extend(base_path.glob("mnist_cnn_model.h5"))
+
+        # Filter out weights files
+        h5_files = [f for f in h5_files if "weights" not in f.name.lower()]
+
+        if h5_files:
+            # Sort by modification time, newest first
+            latest_model = max(h5_files, key=lambda p: p.stat().st_mtime)
+            print(f"Loading model from: {latest_model}")
+            model_instance, viz_model_instance = get_activation_model(str(latest_model))
+            print("Models loaded successfully")
+        else:
+            # Try the original load_model approach
+            try:
+                model_instance = load_model()
+                viz_model_instance = create_visualization_model(model_instance)
+                print("Models loaded using fallback method")
+            except Exception:
+                raise RuntimeError(
+                    "No trained model found. Please train a model first."
+                )
+
+    return model_instance, viz_model_instance
+
+
 def preprocess_canvas_image(image_data: str) -> np.ndarray:
     """
     Preprocess image data from canvas for model input.
@@ -200,12 +255,12 @@ def preprocess_canvas_image(image_data: str) -> np.ndarray:
 
 @app.on_event("startup")
 async def startup_event() -> None:
-    """Load model on startup."""
+    """Load models on startup."""
     try:
-        load_model()
+        load_models()
     except Exception as e:
-        print(f"Warning: Could not preload model: {e}")
-        print("Model will be loaded on first request.")
+        print(f"Warning: Could not preload models: {e}")
+        print("Models will be loaded on first request.")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -218,54 +273,96 @@ async def home(request: Request) -> HTMLResponse:
     )
 
 
-@app.post("/predict", response_model=PredictionResponse)
-async def predict(prediction_request: PredictionRequest) -> PredictionResponse:
+@app.post("/predict")
+async def predict(request: Request) -> JSONResponse:
     """
-    Predict digit from canvas image.
-
-    Args:
-        prediction_request: Request containing base64 encoded image
-
-    Returns:
-        Prediction results with digit, confidence, and probabilities
-
-    Raises:
-        HTTPException: If prediction fails
+    Predict digit from canvas data with activation visualizations.
     """
+    import logging
     import time
 
+    logger = logging.getLogger(__name__)
     start_time = time.time()
 
     try:
-        # Load model if not already loaded
-        model = load_model()
+        # Load models if not already loaded
+        model, viz_model = load_models()
 
-        # Preprocess image
-        img_input = preprocess_canvas_image(prediction_request.image)
+        # Get JSON data
+        data = await request.json()
+        image_data = data.get("image")
 
-        # Make prediction
-        predictions = model.predict(img_input, verbose=0)
+        if not image_data:
+            raise HTTPException(
+                status_code=400,
+                detail="No image data provided",
+            )
 
-        # Get results
-        predicted_digit = int(np.argmax(predictions[0]))
-        confidence = float(predictions[0][predicted_digit])
+        # Process image
+        image_array = preprocess_canvas_image(image_data)
 
-        # Create probability dictionary
-        probabilities = {str(i): float(predictions[0][i]) for i in range(10)}
+        # Get predictions and activations
+        activations = viz_model.predict(image_array, verbose=0)
+
+        # Process activations
+        processed_activations = process_activations(activations)
+
+        # Create visualizations
+        conv1_plot = create_activation_plot(processed_activations, "conv1")
+        conv2_plot = create_activation_plot(processed_activations, "conv2")
+        conv3_plot = create_activation_plot(processed_activations, "conv3")
+        prob_chart = create_probability_chart(
+            processed_activations["predictions"]["probabilities"]
+        )
+        summary_plot = create_layer_summary_plot(processed_activations)
 
         # Calculate processing time
         processing_time = (time.time() - start_time) * 1000  # Convert to ms
 
-        return PredictionResponse(
-            predicted_digit=predicted_digit,
-            confidence=confidence,
-            probabilities=probabilities,
-            processing_time=processing_time,
-        )
+        # Prepare response
+        response = {
+            "prediction": processed_activations["predictions"]["predicted_class"],
+            "confidence": processed_activations["predictions"]["confidence"],
+            "probabilities": processed_activations["predictions"]["probabilities"],
+            "processing_time": processing_time,
+            "visualizations": {
+                "conv1": conv1_plot,
+                "conv2": conv2_plot,
+                "conv3": conv3_plot,
+                "probability_chart": prob_chart,
+                "summary": summary_plot,
+            },
+            "layer_info": {
+                "conv1": {
+                    "shape": processed_activations.get("conv1", {}).get("shape", []),
+                    "num_filters": processed_activations.get("conv1", {}).get(
+                        "num_filters", 0
+                    ),
+                },
+                "conv2": {
+                    "shape": processed_activations.get("conv2", {}).get("shape", []),
+                    "num_filters": processed_activations.get("conv2", {}).get(
+                        "num_filters", 0
+                    ),
+                },
+                "conv3": {
+                    "shape": processed_activations.get("conv3", {}).get("shape", []),
+                    "num_filters": processed_activations.get("conv3", {}).get(
+                        "num_filters", 0
+                    ),
+                },
+            },
+        }
+
+        return JSONResponse(content=response)
 
     except Exception as e:
+        logger.error(f"Prediction error: {e!s}")
+        import traceback
+
+        traceback.print_exc()
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=500,
             detail=f"Prediction failed: {e!s}",
         ) from e
 
@@ -289,6 +386,45 @@ async def health_check() -> dict[str, Any]:
         "timestamp": datetime.now().isoformat(),
         "model_loaded": model_loaded,
         "version": "1.0.0",
+    }
+
+
+@app.get("/model-info")
+async def get_model_info() -> dict[str, Any]:
+    """
+    Get information about the loaded model architecture.
+    """
+    try:
+        model, _ = load_models()
+    except Exception:
+        raise HTTPException(
+            status_code=503,
+            detail="Model not loaded",
+        ) from None
+
+    layer_info = []
+    for layer in model.layers:
+        info = {
+            "name": layer.name,
+            "type": layer.__class__.__name__,
+            "output_shape": layer.output_shape,
+            "params": layer.count_params(),
+        }
+
+        # Add layer-specific info
+        if hasattr(layer, "filters"):
+            info["filters"] = layer.filters
+        if hasattr(layer, "kernel_size"):
+            info["kernel_size"] = layer.kernel_size
+        if hasattr(layer, "units"):
+            info["units"] = layer.units
+
+        layer_info.append(info)
+
+    return {
+        "model_name": model.name,
+        "total_params": model.count_params(),
+        "layers": layer_info,
     }
 
 

@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
  * Initialize the drawing canvas
  */
 function initializeCanvas() {
-    canvas = document.getElementById('drawingCanvas');
+    canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
 
     // Set drawing style
@@ -55,8 +55,8 @@ function setupEventListeners() {
     canvas.addEventListener('touchend', stopDrawing);
 
     // Button events
-    document.getElementById('predictBtn').addEventListener('click', predict);
-    document.getElementById('clearBtn').addEventListener('click', clearCanvas);
+    document.getElementById('predict-btn').addEventListener('click', predict);
+    document.getElementById('clear-btn').addEventListener('click', clearCanvas);
 
     // Prevent scrolling when touching canvas
     document.body.addEventListener('touchstart', function(e) {
@@ -84,9 +84,6 @@ function setupEventListeners() {
 function startDrawing(e) {
     isDrawing = true;
     [lastX, lastY] = getMousePos(e);
-
-    // Hide the "Draw here" label
-    document.querySelector('.canvas-label').style.opacity = '0';
 }
 
 /**
@@ -145,10 +142,7 @@ function clearCanvas() {
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Show the "Draw here" label again
-    document.querySelector('.canvas-label').style.opacity = '1';
-
-    // Clear results
+    // Clear results and visualizations
     clearResults();
 }
 
@@ -156,13 +150,9 @@ function clearCanvas() {
  * Clear prediction results
  */
 function clearResults() {
-    document.getElementById('resultContainer').innerHTML = `
-        <div class="placeholder">
-            <div class="placeholder-icon">✏️</div>
-            <p>Draw a digit and click "Predict"</p>
-        </div>
-    `;
-    document.getElementById('probabilityChart').style.display = 'none';
+    document.getElementById('prediction-result').classList.add('hidden');
+    document.getElementById('probability-section').classList.add('hidden');
+    document.getElementById('visualization-section').classList.add('hidden');
 }
 
 /**
@@ -171,12 +161,14 @@ function clearResults() {
 async function predict() {
     // Check if canvas is empty
     if (isCanvasEmpty()) {
-        showError('Please draw a digit first!');
+        showMessage('Please draw a digit first!', 'error');
         return;
     }
 
-    // Show loading overlay
-    showLoading();
+    // Show loading state
+    const predictBtn = document.getElementById('predict-btn');
+    predictBtn.disabled = true;
+    predictBtn.textContent = 'Analyzing...';
 
     try {
         // Get canvas data as base64
@@ -188,27 +180,30 @@ async function predict() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                image: imageData
-            })
+            body: JSON.stringify({ image: imageData })
         });
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const result = await response.json();
+        const data = await response.json();
 
-        // Hide loading
-        hideLoading();
-
-        // Display results
-        displayResults(result);
+        // Update visualizations
+        if (window.updateVisualizationsCallback) {
+            window.updateVisualizationsCallback(data);
+        }
 
     } catch (error) {
-        hideLoading();
-        showError('Failed to make prediction. Please try again.');
         console.error('Prediction error:', error);
+        showMessage('Prediction failed. Please try again.', 'error');
+
+        if (window.visualizer) {
+            window.visualizer.showError(error.message);
+        }
+    } finally {
+        predictBtn.disabled = false;
+        predictBtn.textContent = 'Predict';
     }
 }
 
@@ -230,96 +225,56 @@ function isCanvasEmpty() {
 }
 
 /**
- * Display prediction results
+ * Show a temporary message
  */
-function displayResults(result) {
-    // Display main prediction
-    document.getElementById('resultContainer').innerHTML = `
-        <div class="prediction-result">
-            <div class="predicted-digit">${result.predicted_digit}</div>
-            <div class="confidence-score">${(result.confidence * 100).toFixed(1)}% confident</div>
-            <div class="processing-time">Processed in ${result.processing_time.toFixed(1)}ms</div>
-        </div>
-    `;
+function showMessage(message, type = 'info') {
+    // Create message element
+    const messageEl = document.createElement('div');
+    messageEl.className = `message message-${type}`;
+    messageEl.textContent = message;
 
-    // Display probability chart
-    displayProbabilityChart(result.probabilities);
+    // Add to page
+    document.body.appendChild(messageEl);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        messageEl.remove();
+    }, 3000);
 }
 
-/**
- * Display probability chart
- */
-function displayProbabilityChart(probabilities) {
-    const chartContainer = document.querySelector('.chart-container');
-    chartContainer.innerHTML = '';
-
-    // Sort probabilities by value
-    const sortedProbs = Object.entries(probabilities)
-        .sort((a, b) => b[1] - a[1]);
-
-    // Create bars for each digit
-    sortedProbs.forEach(([digit, probability]) => {
-        const percentage = (probability * 100).toFixed(1);
-        const isHigh = probability > 0.5;
-
-        const probBar = document.createElement('div');
-        probBar.className = 'prob-bar';
-        probBar.innerHTML = `
-            <div class="prob-label">${digit}</div>
-            <div class="prob-bar-container">
-                <div class="prob-bar-fill ${isHigh ? 'high' : ''}" style="width: ${percentage}%"></div>
-            </div>
-            <div class="prob-value">${percentage}%</div>
-        `;
-
-        chartContainer.appendChild(probBar);
-    });
-
-    // Show the chart
-    document.getElementById('probabilityChart').style.display = 'block';
-}
-
-/**
- * Show loading overlay
- */
-function showLoading() {
-    document.getElementById('loadingOverlay').style.display = 'flex';
-}
-
-/**
- * Hide loading overlay
- */
-function hideLoading() {
-    document.getElementById('loadingOverlay').style.display = 'none';
-}
-
-/**
- * Show error message
- */
-function showError(message) {
-    document.getElementById('errorMessage').textContent = message;
-    document.getElementById('errorModal').style.display = 'flex';
-}
-
-/**
- * Close error modal
- */
-function closeErrorModal() {
-    document.getElementById('errorModal').style.display = 'none';
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modal = document.getElementById('errorModal');
-    if (event.target === modal) {
-        closeErrorModal();
+// Add message styles
+const style = document.createElement('style');
+style.textContent = `
+    .message {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 1rem 2rem;
+        border-radius: 5px;
+        color: white;
+        font-weight: 500;
+        z-index: 1001;
+        animation: slideDown 0.3s ease-out;
     }
-}
 
-// Close modal with close button
-document.addEventListener('DOMContentLoaded', function() {
-    const closeBtn = document.querySelector('.close');
-    if (closeBtn) {
-        closeBtn.onclick = closeErrorModal;
+    .message-error {
+        background-color: #dc3545;
     }
-});
+
+    .message-info {
+        background-color: #17a2b8;
+    }
+
+    @keyframes slideDown {
+        from {
+            transform: translateX(-50%) translateY(-100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    }
+`;
+document.head.appendChild(style);

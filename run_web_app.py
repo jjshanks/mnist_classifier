@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Launch the MNIST Digit Classifier web application.
-
-This script starts the FastAPI server with appropriate settings
-for development or production.
+Run the complete MNIST classifier web application with visualizations.
 """
 
 import argparse
+import os
 import sys
+import time
+import webbrowser
 from pathlib import Path
 
 # Add project root to path
@@ -15,10 +15,23 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 
+def check_requirements():
+    """Check if all requirements are met."""
+    # Check for trained model
+    model_paths = list(Path("models/experiments").glob("**/*.h5"))
+    if not model_paths:
+        print("⚠️  No trained model found!")
+        print("Please train a model first: python train_model.py")
+        return False
+
+    print(f"✅ Found trained model: {model_paths[0].name}")
+    return True
+
+
 def main():
     """Main entry point for web app launcher."""
     parser = argparse.ArgumentParser(
-        description="Launch MNIST Digit Classifier Web App",
+        description="Launch MNIST Neural Network Visualizer",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -26,6 +39,7 @@ Examples:
   %(prog)s --port 8080        # Run on different port
   %(prog)s --production       # Run in production mode
   %(prog)s --host 0.0.0.0     # Allow external connections
+  %(prog)s --no-browser       # Don't open browser automatically
 
 After starting, open http://localhost:8000 in your browser.
         """,
@@ -55,7 +69,19 @@ After starting, open http://localhost:8000 in your browser.
         help="Number of worker processes (production only)",
     )
 
+    parser.add_argument(
+        "--no-browser",
+        action="store_true",
+        help="Don't open browser automatically",
+    )
+
     args = parser.parse_args()
+
+    print("🚀 Starting MNIST Neural Network Visualizer")
+    print("=" * 50)
+
+    if not check_requirements():
+        sys.exit(1)
 
     # Import uvicorn
     try:
@@ -67,7 +93,7 @@ After starting, open http://localhost:8000 in your browser.
 
     print(f"""
 ╔══════════════════════════════════════════════╗
-║     MNIST Digit Classifier Web App           ║
+║     MNIST Neural Network Visualizer          ║
 ╠══════════════════════════════════════════════╣
 ║  Host: {args.host:<37} ║
 ║  Port: {args.port:<37} ║
@@ -104,11 +130,29 @@ After starting, open http://localhost:8000 in your browser.
     print(f"📍 API documentation at: http://{args.host}:{args.port}/docs")
     print("\nPress CTRL+C to stop the server\n")
 
+    # Set environment variables
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(project_root)
+
     # Run the server
     try:
+        if not args.production and not args.no_browser:
+            # Open browser after a short delay
+            def open_browser():
+                time.sleep(3)
+                print("\n🌐 Opening browser...")
+                webbrowser.open(f"http://{args.host}:{args.port}")
+
+            import threading
+
+            browser_thread = threading.Thread(target=open_browser)
+            browser_thread.daemon = True
+            browser_thread.start()
+
         uvicorn.run(**config)
     except KeyboardInterrupt:
-        print("\n\n✋ Server stopped by user")
+        print("\n\n👋 Shutting down server...")
+        print("✅ Server stopped")
     except Exception as e:
         print(f"\n❌ Error: {e}")
         sys.exit(1)
