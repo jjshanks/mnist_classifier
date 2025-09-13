@@ -9,189 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def create_activation_plot(
-    activations: dict[str, any], layer_name: str, figsize: tuple[int, int] = (14, 10)
-) -> str:
-    """
-    Create an intuitive visualization of what features the layer is detecting.
-
-    Args:
-        activations: Processed activations dictionary
-        layer_name: Name of layer to visualize
-        figsize: Figure size
-
-    Returns:
-        Base64 encoded image string
-    """
-    # Get prediction for context
-    predicted_digit = activations["predictions"]["predicted_class"]
-    confidence = activations["predictions"]["confidence"]
-
-    fig = plt.figure(figsize=figsize)
-
-    # Create custom layout with more space for the bottom text
-    gs = fig.add_gridspec(6, 4, hspace=0.4, wspace=0.2)
-
-    # Layer-specific titles and descriptions
-    layer_info = {
-        "conv1": {
-            "title": "First Convolutional Layer (32 filters)",
-            "description": "Filter activations from the first convolutional layer processing the input image",
-            "cmap": "RdBu_r",
-        },
-        "conv2": {
-            "title": "Second Convolutional Layer (64 filters)",
-            "description": "Filter activations from the second convolutional layer",
-            "cmap": "viridis",
-        },
-        "conv3": {
-            "title": "Third Convolutional Layer (128 filters)",
-            "description": "Filter activations from the third convolutional layer",
-            "cmap": "plasma",
-        },
-    }
-
-    info = layer_info.get(
-        layer_name,
-        {
-            "title": f"{layer_name} Activations",
-            "description": "Neural network layer activations",
-            "cmap": "viridis",
-        },
-    )
-
-    # Main title
-    fig.suptitle(
-        f"{info['title']}\nFor predicted digit: {predicted_digit}",
-        fontsize=16,
-        fontweight="bold",
-    )
-
-    # Description
-    ax_desc = fig.add_subplot(gs[0, :])
-    ax_desc.text(
-        0.5,
-        0.5,
-        info["description"],
-        ha="center",
-        va="center",
-        fontsize=12,
-        bbox=dict(boxstyle="round,pad=0.5", facecolor="lightblue", alpha=0.3),
-    )
-    ax_desc.axis("off")
-
-    if layer_name in activations and "top_filters" in activations[layer_name]:
-        filters = activations[layer_name]["top_filters"]
-        indices = activations[layer_name]["top_indices"]
-        mean_acts = activations[layer_name]["mean_activations"]
-
-        # Show top 16 filters in a 4x4 grid
-        for i in range(min(16, filters.shape[-1])):
-            row = (i // 4) + 1
-            col = i % 4
-            ax = fig.add_subplot(gs[row, col])
-
-            # Get the filter
-            filter_activation = filters[:, :, i]
-            filter_idx = indices[i]
-            activation_strength = mean_acts[filter_idx]
-
-            # Normalize for display
-            vmin, vmax = filter_activation.min(), filter_activation.max()
-            if vmax > vmin:
-                filter_normalized = (filter_activation - vmin) / (vmax - vmin)
-            else:
-                filter_normalized = filter_activation
-
-            # Plot with appropriate colormap
-            im = ax.imshow(filter_normalized, cmap=info["cmap"], vmin=0, vmax=1)
-
-            # Add border color based on activation strength
-            strength_percentile = (
-                activation_strength / max(mean_acts) if max(mean_acts) > 0 else 0
-            )
-            if strength_percentile > 0.8:
-                border_color = "red"
-                border_width = 3
-                strength_label = "Very Active"
-            elif strength_percentile > 0.5:
-                border_color = "orange"
-                border_width = 2
-                strength_label = "Active"
-            else:
-                border_color = "gray"
-                border_width = 1
-                strength_label = "Low Activity"
-
-            # Add border
-            for spine in ax.spines.values():
-                spine.set_edgecolor(border_color)
-                spine.set_linewidth(border_width)
-
-            # Simple title with just filter number
-            ax.set_title(
-                f"Filter {filter_idx}\n({strength_label})",
-                fontsize=9,
-                pad=2,
-            )
-            ax.axis("off")
-
-            # Add small colorbar for the first filter to show scale
-            if i == 0:
-                cbar_ax = fig.add_axes(
-                    [
-                        ax.get_position().x1 + 0.01,
-                        ax.get_position().y0,
-                        0.01,
-                        ax.get_position().height,
-                    ]
-                )
-                fig.colorbar(im, cax=cbar_ax, label="Activation")
-
-        # Hide unused subplots
-        for i in range(filters.shape[-1], 16):
-            row = (i // 4) + 1
-            col = i % 4
-            ax = fig.add_subplot(gs[row, col])
-            ax.axis("off")
-
-    # Add interpretation guide at bottom with proper spacing
-    ax_guide = fig.add_subplot(gs[5, :])
-    ax_guide.axis("off")
-
-    guide_text = """Reading the visualization:
-• Brighter areas = stronger activation (the network "sees" something important there)
-• Red borders = filters most active for this input (key features for recognition)
-• Each filter has learned to detect a specific type of feature"""
-
-    if layer_name == "conv1":
-        guide_text += "\n• First convolutional layer: 32 filters with 3×3 kernels processing the input image"
-    elif layer_name == "conv2":
-        guide_text += "\n• Second convolutional layer: 64 filters processing outputs from the first layer"
-    elif layer_name == "conv3":
-        guide_text += "\n• Third convolutional layer: 128 filters in the final convolutional stage"
-
-    ax_guide.text(
-        0.5,
-        0.8,
-        guide_text,
-        ha="center",
-        va="top",
-        fontsize=10,
-        bbox=dict(boxstyle="round,pad=0.5", facecolor="lightyellow", alpha=0.5),
-    )
-
-    plt.tight_layout()
-
-    # Convert to base64
-    buffer = io.BytesIO()
-    plt.savefig(buffer, format="png", dpi=100, bbox_inches="tight")
-    buffer.seek(0)
-    image_base64 = base64.b64encode(buffer.getvalue()).decode()
-    plt.close(fig)
-
-    return image_base64
-
 
 def create_probability_chart(predictions: list[float]) -> str:
     """
@@ -295,6 +112,252 @@ def create_activation_heatmap(
     plt.close(fig)
 
     return image_base64
+
+
+def create_filter_grid_image(
+    filters: np.ndarray, indices: list[int], mean_acts: np.ndarray, cmap: str = "viridis"
+) -> str:
+    """
+    Create a 4x4 grid of filter activations as a standalone image.
+    
+    Args:
+        filters: Filter activation data (height, width, num_filters)
+        indices: Filter indices sorted by activation strength
+        mean_acts: Mean activation values for each filter
+        cmap: Colormap to use
+        
+    Returns:
+        Base64 encoded image string
+    """
+    fig, axes = plt.subplots(4, 4, figsize=(8, 8))
+    fig.patch.set_facecolor('white')
+    
+    max_activation = max(mean_acts) if len(mean_acts) > 0 else 1
+    
+    for i in range(16):
+        row, col = i // 4, i % 4
+        ax = axes[row, col]
+        
+        if i < filters.shape[-1]:
+            filter_activation = filters[:, :, i]
+            filter_idx = indices[i]
+            activation_strength = mean_acts[filter_idx]
+            
+            # Normalize for display
+            vmin, vmax = filter_activation.min(), filter_activation.max()
+            if vmax > vmin:
+                filter_normalized = (filter_activation - vmin) / (vmax - vmin)
+            else:
+                filter_normalized = filter_activation
+                
+            # Plot with colormap
+            im = ax.imshow(filter_normalized, cmap=cmap, vmin=0, vmax=1)
+            
+            # Add border based on activation strength
+            strength_percentile = activation_strength / max_activation if max_activation > 0 else 0
+            if strength_percentile > 0.8:
+                border_color, border_width = "red", 3
+            elif strength_percentile > 0.5:
+                border_color, border_width = "orange", 2
+            else:
+                border_color, border_width = "gray", 1
+                
+            for spine in ax.spines.values():
+                spine.set_edgecolor(border_color)
+                spine.set_linewidth(border_width)
+                
+            ax.set_title(f"F{filter_idx}", fontsize=8, pad=3)
+        else:
+            ax.axis('off')
+            
+        ax.set_xticks([])
+        ax.set_yticks([])
+    
+    plt.tight_layout(pad=0.5)
+    
+    # Convert to base64
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format="png", dpi=100, bbox_inches="tight", 
+                facecolor='white', edgecolor='none')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.getvalue()).decode()
+    plt.close(fig)
+    
+    return image_base64
+
+
+def create_activation_legend_image(cmap: str = "viridis") -> str:
+    """
+    Create a standalone colorbar legend image.
+    
+    Args:
+        cmap: Colormap to create legend for
+        
+    Returns:
+        Base64 encoded image string
+    """
+    fig, ax = plt.subplots(figsize=(1.5, 6))
+    fig.patch.set_facecolor('white')
+    
+    # Create colorbar
+    gradient = np.linspace(0, 1, 256).reshape(256, 1)
+    ax.imshow(gradient, aspect='auto', cmap=cmap)
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 256)
+    
+    # Add labels
+    ax.set_yticks([0, 64, 128, 192, 255])
+    ax.set_yticklabels(['Very Low', 'Low', 'Medium', 'High', 'Very High'], fontsize=11)
+    ax.set_xticks([])
+    ax.set_ylabel('Activation Strength', fontsize=12, fontweight='bold')
+    
+    plt.tight_layout()
+    
+    # Convert to base64
+    buffer = io.BytesIO()
+    plt.savefig(buffer, format="png", dpi=100, bbox_inches="tight",
+                facecolor='white', edgecolor='none')
+    buffer.seek(0)
+    image_base64 = base64.b64encode(buffer.getvalue()).decode()
+    plt.close(fig)
+    
+    return image_base64
+
+
+
+
+def create_activation_html(
+    activations: dict[str, any], layer_name: str
+) -> str:
+    """
+    Create an HTML visualization of layer activations with embedded images.
+    
+    Args:
+        activations: Processed activations dictionary
+        layer_name: Name of layer to visualize
+        
+    Returns:
+        HTML string with embedded base64 images
+    """
+    # Get prediction for context
+    predicted_digit = activations["predictions"]["predicted_class"]
+    confidence = activations["predictions"]["confidence"]
+    
+    # Layer-specific configurations
+    layer_info = {
+        "conv1": {
+            "title": "First Convolutional Layer (32 filters)",
+            "description": "Filter activations from the first convolutional layer processing the input image",
+            "cmap": "RdBu_r",
+            "details": "32 filters with 3×3 kernels processing the input image"
+        },
+        "conv2": {
+            "title": "Second Convolutional Layer (64 filters)", 
+            "description": "Filter activations from the second convolutional layer",
+            "cmap": "viridis",
+            "details": "64 filters processing outputs from the first layer"
+        },
+        "conv3": {
+            "title": "Third Convolutional Layer (128 filters)",
+            "description": "Filter activations from the third convolutional layer",
+            "cmap": "plasma", 
+            "details": "128 filters in the final convolutional stage"
+        },
+    }
+    
+    info = layer_info.get(
+        layer_name,
+        {
+            "title": f"{layer_name} Activations",
+            "description": "Neural network layer activations",
+            "cmap": "viridis",
+            "details": "Neural network layer processing"
+        },
+    )
+    
+    # Generate component images if layer data exists
+    if layer_name in activations and "top_filters" in activations[layer_name]:
+        filters = activations[layer_name]["top_filters"]
+        indices = activations[layer_name]["top_indices"]
+        mean_acts = activations[layer_name]["mean_activations"]
+        
+        # Create individual images
+        filter_grid_img = create_filter_grid_image(filters, indices, mean_acts, info["cmap"])
+        legend_img = create_activation_legend_image(info["cmap"])
+        
+        # Calculate statistics
+        num_active_filters = sum(1 for act in mean_acts if act > np.mean(mean_acts))
+        max_activation = max(mean_acts) if len(mean_acts) > 0 else 0
+        avg_activation = np.mean(mean_acts) if len(mean_acts) > 0 else 0
+        
+    else:
+        filter_grid_img = legend_img = ""
+        num_active_filters = max_activation = avg_activation = 0
+    
+    # Generate HTML template
+    html_template = f"""
+    <div class="activation-container" data-layer="{layer_name}">
+        <div class="activation-header">
+            <h2 class="layer-title">{info['title']}</h2>
+            <div class="prediction-context">
+                <span class="predicted-digit">Predicted: <strong>{predicted_digit}</strong></span>
+                <span class="confidence">Confidence: <strong>{confidence:.1%}</strong></span>
+            </div>
+        </div>
+        
+        <div class="layer-description">
+            <p>{info['description']}</p>
+            <div class="layer-details">{info['details']}</div>
+        </div>
+        
+        <div class="activation-content">
+            <div class="filter-section">
+                <h3>Filter Activations</h3>
+                <div class="filter-visualization">
+                    <div class="filter-grid-container">
+                        <img src="data:image/png;base64,{filter_grid_img}" 
+                             alt="Filter activation grid" 
+                             class="filter-grid-image" />
+                    </div>
+                    <div class="legend-container">
+                        <img src="data:image/png;base64,{legend_img}" 
+                             alt="Activation strength legend" 
+                             class="legend-image" />
+                    </div>
+                </div>
+                
+                <div class="filter-stats">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Active Filters:</span>
+                            <span class="stat-value">{num_active_filters}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Max Activation:</span>
+                            <span class="stat-value">{max_activation:.3f}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Avg Activation:</span>
+                            <span class="stat-value">{avg_activation:.3f}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="interpretation-guide">
+            <h4>Reading the visualization:</h4>
+            <ul class="guide-list">
+                <li><strong>Brighter areas</strong> = stronger activation (the network "sees" something important)</li>
+                <li><strong>Red borders</strong> = filters most active for this input (key features for recognition)</li>
+                <li><strong>Each filter</strong> has learned to detect a specific type of feature</li>
+                <li><strong>{info['details']}</strong></li>
+            </ul>
+        </div>
+    </div>
+    """
+    
+    return html_template.strip()
 
 
 def create_layer_summary_plot(activations: dict[str, any]) -> str:
@@ -420,7 +483,7 @@ def create_layer_summary_plot(activations: dict[str, any]) -> str:
 
                 # Use simple filter numbers instead of fake feature names
                 filter_labels = [f"F{top_indices[i]}" for i in range(len(top_values))]
-                
+
                 ax.set_xticks(range(len(top_values)))
                 ax.set_xticklabels(filter_labels, rotation=45, ha="right", fontsize=10)
 

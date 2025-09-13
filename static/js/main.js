@@ -173,13 +173,16 @@ async function predict() {
         // Get canvas data as base64
         const imageData = canvas.toDataURL('image/png');
 
-        // Send to API
+        // Send to API (always use HTML format)
         const response = await fetch('/predict', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ image: imageData })
+            body: JSON.stringify({ 
+                image: imageData,
+                format: 'html'
+            })
         });
 
         if (!response.ok) {

@@ -48,26 +48,38 @@ class NeuralNetworkVisualizer {
             }
         }
 
-        // Update layer visualizations
+        // Update layer visualizations (HTML format only)
         if (data.visualizations) {
             if (data.visualizations.conv1) {
-                const conv1Plot = document.getElementById('conv1-plot');
-                if (conv1Plot) {
-                    conv1Plot.src = `data:image/png;base64,${data.visualizations.conv1}`;
+                const conv1Container = document.getElementById('conv1-tab');
+                if (conv1Container) {
+                    conv1Container.innerHTML = `
+                        <h3>First Convolutional Layer</h3>
+                        ${data.visualizations.conv1}
+                    `;
                 }
             }
+            
             if (data.visualizations.conv2) {
-                const conv2Plot = document.getElementById('conv2-plot');
-                if (conv2Plot) {
-                    conv2Plot.src = `data:image/png;base64,${data.visualizations.conv2}`;
+                const conv2Container = document.getElementById('conv2-tab');
+                if (conv2Container) {
+                    conv2Container.innerHTML = `
+                        <h3>Second Convolutional Layer</h3>
+                        ${data.visualizations.conv2}
+                    `;
                 }
             }
+            
             if (data.visualizations.conv3) {
-                const conv3Plot = document.getElementById('conv3-plot');
-                if (conv3Plot) {
-                    conv3Plot.src = `data:image/png;base64,${data.visualizations.conv3}`;
+                const conv3Container = document.getElementById('conv3-tab');
+                if (conv3Container) {
+                    conv3Container.innerHTML = `
+                        <h3>Third Convolutional Layer</h3>
+                        ${data.visualizations.conv3}
+                    `;
                 }
             }
+            
             if (data.visualizations.summary) {
                 const summaryPlot = document.getElementById('summary-plot');
                 if (summaryPlot) {

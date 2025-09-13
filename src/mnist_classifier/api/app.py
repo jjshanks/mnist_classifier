@@ -46,7 +46,7 @@ from src.mnist_classifier.preprocess import (  # noqa: E402
     reshape_images,
 )
 from src.mnist_classifier.visualization.activation_viz import (  # noqa: E402
-    create_activation_plot,
+    create_activation_html,
     create_layer_summary_plot,
     create_probability_chart,
 )
@@ -307,10 +307,10 @@ async def predict(request: Request) -> JSONResponse:
         # Process activations
         processed_activations = process_activations(activations)
 
-        # Create visualizations
-        conv1_plot = create_activation_plot(processed_activations, "conv1")
-        conv2_plot = create_activation_plot(processed_activations, "conv2")
-        conv3_plot = create_activation_plot(processed_activations, "conv3")
+        # Create HTML visualizations
+        conv1_plot = create_activation_html(processed_activations, "conv1")
+        conv2_plot = create_activation_html(processed_activations, "conv2")
+        conv3_plot = create_activation_html(processed_activations, "conv3")
         prob_chart = create_probability_chart(
             processed_activations["predictions"]["probabilities"]
         )
