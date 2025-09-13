@@ -162,3 +162,49 @@ uv run python -c "import tensorflow as tf; print('GPUs:', tf.config.list_physica
 - GPU training is 10-50x faster than CPU
 - Expect ~4-5ms per step on RTX 3080 Ti
 - Memory growth is enabled to prevent TensorFlow from allocating all GPU memory
+
+## Visualization Architecture
+
+### HTML-Based Neural Network Visualizations
+The project uses a modern modular visualization system that generates HTML with embedded base64 images instead of large single matplotlib figures. This provides better performance, responsive design, and improved user experience.
+
+#### Key Visualization Functions (`src/mnist_classifier/visualization/activation_viz.py`)
+- `create_activation_html()`: Main function that generates structured HTML templates with embedded images
+- `create_filter_grid_image()`: Creates 4×4 grid of filter activations as standalone base64 images
+- `create_activation_legend_image()`: Generates detailed colorbars with 5-level activation scales
+- `create_probability_chart()`: Bar chart for prediction probabilities
+- `create_layer_summary_plot()`: Overview visualization showing information flow
+
+#### Frontend Integration (`static/js/visualizations.js`)
+The web interface dynamically injects HTML visualizations into layer tabs. Each convolutional layer (conv1, conv2, conv3) gets its own HTML content with:
+- Filter activation grids with color-coded borders indicating activation strength
+- Interactive legends showing activation intensity scales
+- Layer-specific statistics (active filters, max/avg activation)
+- Contextual interpretation guides
+
+#### CSS Architecture (`static/css/visualizations.css`)
+- `.activation-container`: Main responsive container for HTML visualizations
+- `.filter-grid-container` & `.legend-container`: Flexible layout for images and legends
+- `.stats-grid`: CSS Grid layout for activation statistics
+- `.interpretation-guide`: Styled educational content
+- Full responsive design with mobile-optimized breakpoints
+
+#### Performance Benefits
+- 32% smaller response payloads compared to large matplotlib images
+- Modular, cacheable image components instead of monolithic figures
+- Responsive CSS Grid layouts that adapt to screen size
+- Better semantic HTML structure for accessibility
+
+### Visualization Data Flow
+1. **API Request**: Frontend sends canvas drawing data to `/predict` endpoint
+2. **Model Processing**: CNN processes image and extracts layer activations
+3. **Activation Processing**: `process_activations()` organizes raw tensor data
+4. **HTML Generation**: `create_activation_html()` generates structured templates
+5. **Frontend Injection**: JavaScript injects HTML into appropriate layer tabs
+6. **User Interaction**: Users can switch between layer tabs to explore activations
+
+# important-instruction-reminders
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.

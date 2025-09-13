@@ -1,172 +1,186 @@
-# MNIST Digit Classifier
+# Learning Machine Learning with MNIST 🧠
 
-A comprehensive machine learning application that classifies handwritten digits using deep learning, featuring both CLI and web interfaces.
+**An educational journey into deep learning through handwritten digit recognition**
 
-## 🎯 Project Overview
+Welcome! This project is designed to help you understand machine learning concepts by building a complete digit classifier from scratch. Whether you're curious about how neural networks work or want hands-on experience with ML, this project walks you through every step.
 
-This project implements a complete ML pipeline for digit recognition:
-- Convolutional Neural Network (CNN) trained on MNIST dataset
-- Command-line interface for single image predictions
-- Interactive web application with real-time drawing
-- Visualization of neural network activations
+## 🎓 What You'll Learn
 
-## 🛠️ Technologies Used
+By exploring this project, you'll understand:
+- **How neural networks "see" and process images**
+- **What happens inside a convolutional neural network (CNN)**
+- **How data flows through an ML pipeline**
+- **Why certain architectural choices matter**
+- **How to visualize what your model is actually learning**
 
-- **Python 3.13**: Core programming language
-- **TensorFlow/Keras**: Deep learning framework
-- **FastAPI**: Modern web framework
-- **uv**: Fast Python package manager
-- **NumPy**: Numerical computations
-- **Pillow**: Image processing
+## 🧩 The Learning Journey
 
-## 📋 Prerequisites
+This project is structured as a step-by-step exploration:
 
-- Python 3.13 or higher
-- Git
-- 4GB RAM minimum
-- 500MB free disk space
+1. **Start Simple**: Load and explore the famous MNIST dataset
+2. **Build Intuition**: Understand how images become numbers
+3. **Create Intelligence**: Design a neural network architecture
+4. **Watch It Learn**: Train your model and see it improve
+5. **Look Inside**: Visualize what each layer actually learns
+6. **Make It Interactive**: Build a web interface to test your understanding
 
-## 🚀 Quick Start
+## 🔍 What Makes This Educational?
 
-1. **Clone the repository**:
+- **Complete transparency**: Every step is explained and visible
+- **Visual learning**: See your neural network's "thoughts" in real-time
+- **Hands-on experimentation**: Modify parameters and see immediate results
+- **No magic**: Understanding why each component exists and how it works
+- **Progressive complexity**: Start simple, build up to sophisticated concepts
+
+## ⚡ Quick Start (5 minutes to see magic happen!)
+
+**Prerequisites**: Python 3.13+, basic comfort with command line
+
+1. **Get the code**:
    ```bash
    git clone <repository-url>
-   cd mnist_classifier
+   cd mnist_classifier_clean
    ```
 
-2. **Set up environment**:
+2. **Set up your environment** (one-time setup):
    ```bash
+   # Create isolated Python environment
    uv venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
-
-3. **Install dependencies**:
-   ```bash
+   source .venv/bin/activate  # Windows: .venv\Scripts\activate
+   
+   # Install everything you need
    uv sync --all-extras
    ```
 
-4. **Test data pipeline** (Milestone 2 complete!):
+3. **See the data** (understand what we're working with):
    ```bash
    python quick_setup_data.py
+   # This downloads MNIST and shows you sample digits
    ```
 
-5. **Train the model** (Milestone 3 complete!):
+4. **Train your first neural network**:
    ```bash
-   # Quick training (5 epochs)
+   # Quick training to see it work (5 epochs, ~2 minutes)
    ./train_gpu.sh --quick
-
-   # Full training (10 epochs recommended)
-   ./train_gpu.sh --epochs 10
-
-   # Set up model symlink for CLI tools
-   python setup_model_link.py
+   
+   # Watch the accuracy improve each epoch!
    ```
 
-6. **Run the web app** (after implementing):
+5. **Explore what your network learned**:
    ```bash
-   uvicorn src.main:app --reload
+   # Start the interactive web interface
+   python run_web_app.py
+   
+   # Open http://localhost:8000 and draw digits!
+   # See what each layer of your network is thinking
    ```
 
-## 📁 Project Structure
+That's it! You now have a working neural network that can recognize handwritten digits, and you can see exactly how it makes decisions.
+
+## 🗺️ Exploring the Codebase (Your Learning Map)
+
+The code is organized to follow your learning journey:
 
 ```
-mnist_classifier/
-├── src/
-│   └── mnist_classifier/      # Main package
-│       ├── __init__.py       # Package initialization
-│       ├── data/             # Data loading and preprocessing
-│       ├── models/           # Neural network models
-│       ├── training/         # Training pipeline
-│       └── cli/              # Command-line interface
-├── tests/                    # Test suite
-├── data/                     # Dataset storage (gitignored)
-├── models/                   # Saved models
-├── notebooks/                # Jupyter notebooks
-├── docs/                     # Documentation
-├── static/                   # Frontend assets (future)
-├── templates/                # HTML templates (future)
-├── predict_digit.py          # CLI tool for single predictions
-├── batch_predict.py          # CLI tool for batch predictions
-├── create_test_images.py     # Generate test images
-└── README.md                 # This file
+mnist_classifier_clean/
+├── 📊 Data Pipeline
+│   ├── quick_setup_data.py          # Start here! See the MNIST dataset
+│   └── src/mnist_classifier/data/   # How we load and prepare images
+│
+├── 🧠 The Neural Network
+│   ├── src/mnist_classifier/models/ # CNN architecture (the "brain")
+│   └── src/mnist_classifier/training/ # How the network learns
+│
+├── 🎯 Making Predictions
+│   ├── predict_digit.py             # Test single images
+│   └── src/mnist_classifier/cli/    # Command-line tools
+│
+├── 🌐 Interactive Experience
+│   ├── run_web_app.py              # Start the web interface
+│   ├── templates/                   # Web pages you'll see
+│   └── static/                      # Styles and JavaScript
+│
+└── 🔍 Neural Network Visualization
+    └── src/mnist_classifier/visualization/ # See inside the "brain"
 ```
 
-## 🎓 Learning Resources
+**Learning tip**: Start with `quick_setup_data.py`, then look at the model architecture in `src/mnist_classifier/models/cnn_model.py` to understand what you're building!
 
-- [TensorFlow Tutorials](https://www.tensorflow.org/tutorials)
-- [FastAPI Documentation](https://fastapi.tiangolo.com)
-- [MNIST Database](http://yann.lecun.com/exdb/mnist/)
+## 🎮 Fun Things to Try Once You're Running
 
-## 🖥️ Command-Line Interface
-
-### Single Image Prediction
+### Experiment with Your Model
 
 ```bash
-# Basic usage
-python predict_digit.py path/to/image.png
+# Test your model on individual images
+python predict_digit.py your_drawing.png
 
-# With custom model
-python predict_digit.py image.jpg --model models/my_model.keras
+# Create your own test images from MNIST
+python create_test_images.py my_test_images/ --mnist
 
-# JSON output
-python predict_digit.py digit.png --output-format json
-
-# Quiet mode (digit only)
-python predict_digit.py digit.png --quiet
+# Process many images at once
+python batch_predict.py test_images/*.png
 ```
 
-### Batch Processing
+### Watch Your Network Think
 
-```bash
-# Process multiple images
-python batch_predict.py images/*.png
+1. **Draw a digit** in the web interface
+2. **See the predictions** change in real-time
+3. **Explore each layer** - click the tabs to see what different parts of the network focus on
+4. **Try tricky digits** - see where your network gets confused!
 
-# Save results to CSV
-python batch_predict.py images/*.jpg --output results.csv
+### Deep Dive: Understanding the Architecture
 
-# JSON output
-python batch_predict.py images/*.png --format json
+The neural network has three main parts:
+- **Conv1**: Detects basic edges and shapes (32 filters)
+- **Conv2**: Combines edges into more complex patterns (64 filters)  
+- **Conv3**: Recognizes digit-specific features (64 filters)
+- **Dense**: Makes the final decision (10 outputs, one per digit)
 
-# Recursive directory search
-python batch_predict.py images/ --recursive
-```
+**Question to explore**: Why do we use progressively more filters in deeper layers?
 
-### Create Test Images
+## 🚀 Your Learning Journey (All Complete!)
 
-```bash
-# Create synthetic test images
-python create_test_images.py test_images/
+This project was built step-by-step to teach ML concepts:
 
-# Create from MNIST dataset
-python create_test_images.py test_images/ --mnist
+- ✅ **Foundation**: Set up Python environment and tools
+- ✅ **Data Understanding**: Explore the MNIST dataset  
+- ✅ **Neural Network Design**: Build a CNN architecture
+- ✅ **Training**: Watch your model learn and improve
+- ✅ **Command Line Tools**: Test your model programmatically
+- ✅ **Web Interface**: Interactive digit drawing and prediction
+- ✅ **Visualization**: See inside your neural network's "mind"
 
-# Create all types
-python create_test_images.py test_images/ --all
-```
+## 🧠 Key ML Concepts You'll Understand
 
-## 📝 Development Roadmap
+By working through this project, you'll grasp:
 
-- [x] Milestone 1: Project setup
-- [x] Milestone 2: Data pipeline
-- [x] Milestone 3: Model training (CNN with >98% accuracy)
-- [x] Milestone 4: CLI interface
-- [ ] Milestone 5: Web interface
-- [ ] Milestone 6: Visualizations
+- **Convolutional layers**: Why they're perfect for images
+- **Activation functions**: How neurons decide what to "fire"
+- **Backpropagation**: How networks learn from mistakes
+- **Overfitting**: Why more training isn't always better
+- **Feature visualization**: What patterns your network detects
+- **Transfer learning principles**: How networks build hierarchical understanding
 
-### Current Features
+## 🤔 Questions to Explore
 
-- **CNN Model**: Two convolutional layers achieving >98% accuracy
-- **GPU Support**: Optimized training with CUDA acceleration
-- **CLI Tools**: Command-line interface for predictions
-- **Batch Processing**: Process multiple images efficiently
-- **Multiple Output Formats**: Human-readable, JSON, CSV
-- **Image Preprocessing**: Automatic normalization and inversion detection
-- **Test Image Generation**: Create synthetic and MNIST-based test images
+- Why does the network get confused between 4 and 9?
+- What happens if you train for too many epochs?
+- How would you modify this for letters instead of digits?
+- Can you spot what Conv1 vs Conv3 focuses on?
 
-## 🤝 Contributing
+## 📚 Want to Learn More?
 
-This is a learning project. Feel free to fork and experiment!
+- **[3Blue1Brown Neural Networks](https://www.3blue1brown.com/topics/neural-networks)**: Beautiful visual explanations
+- **[Fast.ai Course](https://course.fast.ai/)**: Practical deep learning
+- **[TensorFlow Tutorials](https://www.tensorflow.org/tutorials)**: Official documentation
+- **[MNIST Database](http://yann.lecun.com/exdb/mnist/)**: The original dataset description
 
-## 📄 License
+## 🎯 This is Educational!
 
-This project is for educational purposes.
+Feel free to:
+- Modify the architecture and see what happens
+- Experiment with different learning rates
+- Add your own visualizations
+- Break things and fix them - that's how you learn!
+
+**Remember**: The goal isn't just working code, it's understanding *why* it works.
