@@ -49,6 +49,13 @@ from src.mnist_classifier.visualization.activation_viz import (  # noqa: E402
     create_activation_html,
     create_layer_summary_plot,
     create_probability_chart,
+    create_uncertainty_chart,
+    create_mc_samples_distribution,
+    create_uncertainty_gauge,
+    create_mc_dropout_summary_html,
+)
+from src.mnist_classifier.experiments.mc_dropout import (  # noqa: E402
+    MCDropoutPredictor,
 )
 
 # Create FastAPI app
@@ -367,6 +374,103 @@ async def predict(request: Request) -> JSONResponse:
         ) from e
 
 
+@app.post("/predict/mc-dropout")
+async def predict_mc_dropout(request: Request) -> JSONResponse:
+    """
+    Predict digit with Monte Carlo Dropout uncertainty estimation.
+
+    This endpoint runs multiple forward passes with dropout enabled
+    to estimate prediction uncertainty.
+    """
+    import logging
+    import time
+
+    logger = logging.getLogger(__name__)
+    start_time = time.time()
+
+    try:
+        # Load model
+        model, _ = load_models()
+
+        # Get JSON data
+        data = await request.json()
+        image_data = data.get("image")
+        n_samples = data.get("n_samples", 50)  # Default 50 MC samples
+
+        if not image_data:
+            raise HTTPException(
+                status_code=400,
+                detail="No image data provided",
+            )
+
+        # Process image
+        image_array = preprocess_canvas_image(image_data)
+
+        # Create MC Dropout predictor and run inference
+        mc_predictor = MCDropoutPredictor(model, n_samples=n_samples)
+        mc_result = mc_predictor.predict(image_array)
+
+        # Create visualizations
+        uncertainty_chart = create_uncertainty_chart(
+            mean_probs=mc_result.mean_prediction.tolist(),
+            variances=mc_result.prediction_variance.tolist(),
+            confidence_interval=mc_result.confidence_interval,
+            predicted_class=mc_result.predicted_class,
+        )
+        samples_dist = create_mc_samples_distribution(
+            all_predictions=mc_result.all_predictions,
+            predicted_class=mc_result.predicted_class,
+        )
+        uncertainty_gauge = create_uncertainty_gauge(
+            predictive_entropy=mc_result.predictive_entropy,
+            mutual_information=mc_result.mutual_information,
+        )
+        summary_html = create_mc_dropout_summary_html(mc_result.to_dict())
+
+        # Calculate processing time
+        processing_time = (time.time() - start_time) * 1000  # ms
+
+        # Prepare response
+        response = {
+            "prediction": mc_result.predicted_class,
+            "confidence": mc_result.confidence,
+            "mean_probabilities": {
+                str(i): float(p) for i, p in enumerate(mc_result.mean_prediction)
+            },
+            "uncertainty": {
+                "predictive_entropy": mc_result.predictive_entropy,
+                "mutual_information": mc_result.mutual_information,
+                "confidence_interval_95": {
+                    "lower": mc_result.confidence_interval[0],
+                    "upper": mc_result.confidence_interval[1],
+                },
+            },
+            "variance_per_class": {
+                str(i): float(v) for i, v in enumerate(mc_result.prediction_variance)
+            },
+            "n_samples": n_samples,
+            "processing_time": processing_time,
+            "visualizations": {
+                "uncertainty_chart": uncertainty_chart,
+                "samples_distribution": samples_dist,
+                "uncertainty_gauge": uncertainty_gauge,
+                "summary_html": summary_html,
+            },
+        }
+
+        return JSONResponse(content=response)
+
+    except Exception as e:
+        logger.error(f"MC Dropout prediction error: {e!s}")
+        import traceback
+
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"MC Dropout prediction failed: {e!s}",
+        ) from e
+
+
 @app.get("/health")
 async def health_check() -> dict[str, Any]:
     """
@@ -456,6 +560,11 @@ async def api_info() -> dict[str, Any]:
                 "path": "/predict",
                 "method": "POST",
                 "description": "Predict digit from image",
+            },
+            {
+                "path": "/predict/mc-dropout",
+                "method": "POST",
+                "description": "Predict with MC Dropout uncertainty estimation",
             },
             {"path": "/health", "method": "GET", "description": "Health check"},
             {"path": "/api/info", "method": "GET", "description": "API information"},
