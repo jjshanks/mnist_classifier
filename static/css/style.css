@@ -568,3 +568,330 @@ footer {
     color: #7f8c8d;
     margin-bottom: 30px;
 }
+
+/* Uncertainty Toggle */
+.uncertainty-toggle {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.toggle-label input[type="checkbox"] {
+    display: none;
+}
+
+.toggle-slider {
+    width: 50px;
+    height: 26px;
+    background-color: #ccc;
+    border-radius: 13px;
+    position: relative;
+    transition: background-color 0.3s;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background-color: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.toggle-label input:checked + .toggle-slider {
+    background-color: #9b59b6;
+}
+
+.toggle-label input:checked + .toggle-slider::before {
+    transform: translateX(24px);
+}
+
+.toggle-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+}
+
+.toggle-info {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #bdc3c7;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+}
+
+/* Uncertainty Level Colors */
+.uncertainty-low {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.uncertainty-medium {
+    color: #f39c12;
+    font-weight: bold;
+}
+
+.uncertainty-high {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+/* Uncertainty Tab Highlight */
+.viz-tab.uncertainty-tab {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+    border-radius: 5px 5px 0 0;
+}
+
+.viz-tab.uncertainty-tab.active {
+    background: linear-gradient(135deg, #8e44ad, #7d3c98);
+    border-bottom-color: #9b59b6;
+}
+
+/* MC Dropout Summary Styles */
+.mc-dropout-summary {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.mc-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.mc-header h2 {
+    color: #8e44ad;
+    margin-bottom: 5px;
+}
+
+.mc-subtitle {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.mc-prediction {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.prediction-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.predicted-digit-large {
+    font-size: 72px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.prediction-details {
+    text-align: left;
+}
+
+.confidence-value {
+    font-size: 28px;
+    font-weight: bold;
+    color: #27ae60;
+}
+
+.confidence-label {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.confidence-interval {
+    background: #ecf0f1;
+    padding: 10px 15px;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.ci-label {
+    color: #7f8c8d;
+    margin-right: 10px;
+}
+
+.ci-value {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.metric-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.metric-label {
+    color: #7f8c8d;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.metric-desc {
+    color: #95a5a6;
+    font-size: 11px;
+    margin-top: 3px;
+}
+
+/* Variance Section */
+.variance-section {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.variance-section h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+.variance-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.digit-label {
+    width: 20px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.bar-container {
+    flex: 1;
+    height: 20px;
+    background: #ecf0f1;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.variance-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db, #2980b9);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+.variance-bar.predicted {
+    background: linear-gradient(90deg, #27ae60, #1e8449);
+}
+
+.prob-value, .var-value {
+    font-size: 12px;
+    color: #7f8c8d;
+    width: 60px;
+    text-align: right;
+}
+
+/* MC Interpretation */
+.mc-interpretation {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.mc-interpretation h3 {
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+.mc-interpretation ul {
+    list-style: none;
+    padding: 0;
+}
+
+.mc-interpretation li {
+    padding: 8px 0;
+    border-bottom: 1px solid #ecf0f1;
+    font-size: 13px;
+}
+
+.mc-interpretation li:last-child {
+    border-bottom: none;
+}
+
+/* Uncertainty Gauge Section */
+.uncertainty-gauge-section,
+.samples-distribution-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+}
+
+.uncertainty-gauge-section h4,
+.samples-distribution-section h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+/* Loading text */
+.loading-text {
+    text-align: center;
+    color: #7f8c8d;
+    padding: 40px;
+    font-style: italic;
+}
+
+/* Responsive adjustments for uncertainty */
+@media (max-width: 768px) {
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .prediction-main {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .predicted-digit-large {
+        font-size: 48px;
+    }
+}

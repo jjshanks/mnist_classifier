@@ -23,6 +23,14 @@
                     <button id="predict-btn" class="btn btn-primary">Predict</button>
                     <button id="clear-btn" class="btn btn-secondary">Clear</button>
                 </div>
+                <div class="uncertainty-toggle">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="mc-dropout-toggle">
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-text">Uncertainty Mode</span>
+                    </label>
+                    <span class="toggle-info" title="Uses Monte Carlo Dropout to estimate prediction uncertainty">?</span>
+                </div>
             </div>
 
             <!-- Results Section -->
@@ -49,6 +57,7 @@
                 <button class="viz-tab" data-layer="conv1">Conv Layer 1</button>
                 <button class="viz-tab" data-layer="conv2">Conv Layer 2</button>
                 <button class="viz-tab" data-layer="conv3">Conv Layer 3</button>
+                <button class="viz-tab uncertainty-tab hidden" data-layer="uncertainty">Uncertainty</button>
             </div>
 
             <div class="viz-content">
@@ -106,10 +115,18 @@
                         <p><strong>Filter size:</strong> 3×3</p>
                     </div>
                     <p class="explanation">
-                        The third convolutional layer contains 128 learned filters. This layer processes 
-                        information from the previous layers and operates on an even smaller spatial 
+                        The third convolutional layer contains 128 learned filters. This layer processes
+                        information from the previous layers and operates on an even smaller spatial
                         resolution. The patterns shown represent the learned filter activations.
                     </p>
+                </div>
+
+                <!-- Uncertainty Tab (MC Dropout) -->
+                <div id="uncertainty-tab" class="viz-panel">
+                    <h3>Prediction Uncertainty (Monte Carlo Dropout)</h3>
+                    <div id="uncertainty-content">
+                        <p class="loading-text">Enable Uncertainty Mode and click Predict to analyze...</p>
+                    </div>
                 </div>
             </div>
         </div>

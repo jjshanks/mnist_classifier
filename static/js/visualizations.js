@@ -154,6 +154,100 @@ class NeuralNetworkVisualizer {
             probSection.classList.add('hidden');
         }
     }
+
+    updateUncertaintyVisualizations(data) {
+        // Show visualization section
+        const vizSection = document.getElementById('visualization-section');
+        if (vizSection) {
+            vizSection.classList.remove('hidden');
+        }
+
+        // Show uncertainty tab
+        const uncertaintyTabBtn = document.querySelector('.uncertainty-tab');
+        if (uncertaintyTabBtn) {
+            uncertaintyTabBtn.classList.remove('hidden');
+        }
+
+        // Update probability section with uncertainty info
+        const probSection = document.getElementById('probability-section');
+        if (probSection) {
+            probSection.classList.remove('hidden');
+
+            // Update chart with uncertainty visualization
+            const probChart = document.getElementById('prob-chart');
+            if (probChart && data.visualizations && data.visualizations.uncertainty_chart) {
+                probChart.src = `data:image/png;base64,${data.visualizations.uncertainty_chart}`;
+            }
+
+            // Update explanation for uncertainty
+            const explanation = probSection.querySelector('.explanation');
+            if (explanation && data.uncertainty) {
+                const level = this.getUncertaintyLevel(data.uncertainty.predictive_entropy);
+                const ci = data.uncertainty.confidence_interval_95;
+                explanation.innerHTML = `
+                    <strong>Uncertainty Analysis:</strong>
+                    Prediction confidence: <strong>${(data.confidence * 100).toFixed(1)}%</strong>
+                    (95% CI: ${(ci.lower * 100).toFixed(1)}% - ${(ci.upper * 100).toFixed(1)}%)
+                    <br>
+                    Uncertainty level: <span class="uncertainty-${level}">${level.toUpperCase()}</span>
+                    | Entropy: ${data.uncertainty.predictive_entropy.toFixed(4)}
+                `;
+            }
+        }
+
+        // Update uncertainty tab content
+        const uncertaintyContent = document.getElementById('uncertainty-content');
+        if (uncertaintyContent && data.visualizations) {
+            let html = '';
+
+            // Add summary HTML if available
+            if (data.visualizations.summary_html) {
+                html += data.visualizations.summary_html;
+            }
+
+            // Add uncertainty gauge
+            if (data.visualizations.uncertainty_gauge) {
+                html += `
+                    <div class="uncertainty-gauge-section">
+                        <h4>Uncertainty Gauges</h4>
+                        <img src="data:image/png;base64,${data.visualizations.uncertainty_gauge}"
+                             class="visualization-img" alt="Uncertainty gauges" />
+                    </div>
+                `;
+            }
+
+            // Add sample distribution
+            if (data.visualizations.samples_distribution) {
+                html += `
+                    <div class="samples-distribution-section">
+                        <h4>Monte Carlo Sample Distributions</h4>
+                        <p class="explanation">
+                            Each histogram shows the distribution of predicted probabilities
+                            across ${data.n_samples || 50} forward passes with dropout enabled.
+                        </p>
+                        <img src="data:image/png;base64,${data.visualizations.samples_distribution}"
+                             class="visualization-img" alt="Sample distributions" />
+                    </div>
+                `;
+            }
+
+            uncertaintyContent.innerHTML = html;
+        }
+
+        // Switch to uncertainty tab
+        this.switchTab('uncertainty');
+
+        // Scroll to visualizations
+        if (vizSection) {
+            vizSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    getUncertaintyLevel(entropy) {
+        if (entropy < 0.3) return 'low';
+        if (entropy < 1.0) return 'medium';
+        return 'high';
+    }
 }
 
 // Initialize visualizer
@@ -161,8 +255,12 @@ const visualizer = new NeuralNetworkVisualizer();
 
 // Update the main.js predict function to use visualizer
 // This would be integrated with the existing main.js code
-window.updateVisualizationsCallback = (data) => {
-    visualizer.updateVisualizations(data);
+window.updateVisualizationsCallback = (data, useUncertainty = false) => {
+    if (useUncertainty) {
+        visualizer.updateUncertaintyVisualizations(data);
+    } else {
+        visualizer.updateVisualizations(data);
+    }
 };
 
 // Tutorial and help functionality

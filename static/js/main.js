@@ -164,25 +164,32 @@ async function predict() {
         return;
     }
 
+    // Check if uncertainty mode is enabled
+    const mcDropoutToggle = document.getElementById('mc-dropout-toggle');
+    const useUncertainty = mcDropoutToggle && mcDropoutToggle.checked;
+
     // Show loading state
     const predictBtn = document.getElementById('predict-btn');
     predictBtn.disabled = true;
-    predictBtn.textContent = 'Analyzing...';
+    predictBtn.textContent = useUncertainty ? 'Analyzing uncertainty...' : 'Analyzing...';
 
     try {
         // Get canvas data as base64
         const imageData = canvas.toDataURL('image/png');
 
-        // Send to API (always use HTML format)
-        const response = await fetch('/predict', {
+        // Choose endpoint based on uncertainty mode
+        const endpoint = useUncertainty ? '/predict/mc-dropout' : '/predict';
+        const bodyData = useUncertainty
+            ? { image: imageData, n_samples: 50 }
+            : { image: imageData, format: 'html' };
+
+        // Send to API
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ 
-                image: imageData,
-                format: 'html'
-            })
+            body: JSON.stringify(bodyData)
         });
 
         if (!response.ok) {
@@ -193,7 +200,7 @@ async function predict() {
 
         // Update visualizations
         if (window.updateVisualizationsCallback) {
-            window.updateVisualizationsCallback(data);
+            window.updateVisualizationsCallback(data, useUncertainty);
         }
 
     } catch (error) {
